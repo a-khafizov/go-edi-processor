@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"io"
 	"log"
 	"net/http"
 	"os"
@@ -9,19 +10,17 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/gin-gonic/gin"
-	"github.com/go-edi-document-processor/internal/config"
-	"github.com/go-edi-document-processor/internal/controllers"
-	"github.com/go-edi-document-processor/internal/logger"
-	"github.com/go-edi-document-processor/internal/middleware"
+	g "github.com/go-edi-document-processor/internal/controllers/grpc"
+	h "github.com/go-edi-document-processor/internal/controllers/http"
+	"github.com/go-edi-document-processor/internal/infrastructure/config"
+	"github.com/go-edi-document-processor/internal/infrastructure/logger"
+	"github.com/go-edi-document-processor/internal/infrastructure/tracing"
 	"go.uber.org/zap"
 )
 
 func main() {
-	// Инициализация конфигурации
 	log.Printf("Starting service with environment: %s", config.Environment())
 
-	// Инициализация логгера
 	err := logger.InitGlobal(config.LogLevel(), config.IsDevelopment())
 	if err != nil {
 		log.Fatalf("Failed to initialize logger: %v", err)
@@ -29,36 +28,34 @@ func main() {
 	logger := logger.GetGlobal()
 	defer logger.Sync()
 
-	// Создание HTTP сервера
-	gin.SetMode(gin.ReleaseMode)
-	if config.IsDevelopment() {
-		gin.SetMode(gin.DebugMode)
+	shutdownTracing, err := tracing.InitTracing("go-edi-document-processor", io.Discard)
+	if err != nil {
+		logger.Zap().Fatal("Failed to initialize tracing", zap.Error(err))
 	}
-	r := gin.New()
-	m := middleware.NewMiddleware(logger)
-	r.Use(m.Recovery())
-	r.Use(m.RequestLogger())
-
-	restController := controllers.NewRestController(logger, m)
-	restController.RegisterRoutes(r)
+	defer shutdownTracing()
 
 	httpPort := config.HTTPPort()
 	if httpPort == "" {
 		httpPort = "8080"
 	}
-	httpServer := &http.Server{
-		Addr:    ":" + httpPort,
-		Handler: r,
-	}
-
-	// Создание gRPC сервера
 	grpcPort := config.GRPCPort()
 	if grpcPort == "" {
 		grpcPort = "50051"
 	}
-	grpcServer := controllers.NewGrpcServer(logger, grpcPort)
 
-	// Запуск серверов в горутинах
+	gatewayCtx := context.Background()
+	gatewayHandler, err := h.NewGatewayHandler(gatewayCtx, "localhost:"+grpcPort)
+	if err != nil {
+		logger.Zap().Fatal("Failed to create gateway handler", zap.Error(err))
+	}
+
+	httpServer := &http.Server{
+		Addr:    ":" + httpPort,
+		Handler: gatewayHandler,
+	}
+
+	grpcServer := g.NewGrpcServer(logger, grpcPort)
+
 	go func() {
 		logger.Zap().Info("Starting HTTP server", zap.String("port", httpPort))
 		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
@@ -72,13 +69,12 @@ func main() {
 		}
 	}()
 
-	// Ожидание сигнала завершения
 	quit := make(chan os.Signal, 1)
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
+
 	logger.Zap().Info("Shutting down servers...")
 
-	// Graceful shutdown
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 

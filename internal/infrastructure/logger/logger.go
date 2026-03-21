@@ -8,13 +8,11 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// Logger представляет собой обёртку над zap и slog
 type Logger struct {
 	zap  *zap.Logger
 	slog *slog.Logger
 }
 
-// New создаёт новый логгер на основе конфигурации
 func New(level string, development bool) (*Logger, error) {
 	var zapLevel zapcore.Level
 	switch level {
@@ -45,7 +43,6 @@ func New(level string, development bool) (*Logger, error) {
 		return nil, err
 	}
 
-	// Создаём slog логгер
 	slogLogger := slog.New(slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
 		Level: slog.LevelInfo,
 	}))
@@ -56,40 +53,33 @@ func New(level string, development bool) (*Logger, error) {
 	}, nil
 }
 
-// Zap возвращает zap логгер
 func (l *Logger) Zap() *zap.Logger {
 	return l.zap
 }
 
-// Slog возвращает slog логгер
 func (l *Logger) Slog() *slog.Logger {
 	return l.slog
 }
 
-// Sync закрывает логгер
 func (l *Logger) Sync() error {
 	return l.zap.Sync()
 }
 
-// Global логгер (синглтон)
 var globalLogger *Logger
 
-// InitGlobal инициализирует глобальный логгер
 func InitGlobal(level string, development bool) error {
 	logger, err := New(level, development)
 	if err != nil {
 		return err
 	}
 	globalLogger = logger
-	// Устанавливаем глобальный slog логгер
+
 	slog.SetDefault(logger.slog)
 	return nil
 }
 
-// GetGlobal возвращает глобальный логгер
 func GetGlobal() *Logger {
 	if globalLogger == nil {
-		// fallback на стандартный логгер
 		zapLogger, _ := zap.NewProduction()
 		slogLogger := slog.New(slog.NewJSONHandler(os.Stdout, nil))
 		globalLogger = &Logger{

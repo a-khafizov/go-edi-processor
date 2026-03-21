@@ -1,13 +1,13 @@
-package controllers
+package grpc
 
 import (
 	"net"
 
-	"github.com/go-edi-document-processor/internal/logger"
+	"github.com/go-edi-document-processor/api/proto"
+	"github.com/go-edi-document-processor/internal/infrastructure/logger"
+	"go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc"
 	"go.uber.org/zap"
 	"google.golang.org/grpc"
-	"google.golang.org/grpc/health"
-	healthpb "google.golang.org/grpc/health/grpc_health_v1"
 )
 
 type GrpcServer struct {
@@ -17,12 +17,20 @@ type GrpcServer struct {
 }
 
 func NewGrpcServer(log *logger.Logger, port string) *GrpcServer {
-	grpcServer := grpc.NewServer()
-	healthServer := health.NewServer()
-	healthpb.RegisterHealthServer(grpcServer, healthServer)
+	otelHandler := otelgrpc.NewServerHandler()
+	recovery := RecoveryInterceptor(log)
+	logging := LoggingInterceptor(log)
 
-	// Устанавливаем статус SERVING
-	healthServer.SetServingStatus("", healthpb.HealthCheckResponse_SERVING)
+	grpcServer := grpc.NewServer(
+		grpc.StatsHandler(otelHandler),
+		grpc.ChainUnaryInterceptor(
+			recovery,
+			logging,
+		),
+	)
+
+	docService := NewDocumentService(log)
+	proto.RegisterDocumentServiceServer(grpcServer, docService)
 
 	return &GrpcServer{
 		server: grpcServer,
