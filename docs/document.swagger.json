@@ -1,0 +1,199 @@
+{
+  "swagger": "2.0",
+  "info": {
+    "title": "document.proto",
+    "version": "version not set"
+  },
+  "tags": [
+    {
+      "name": "DocumentService"
+    }
+  ],
+  "consumes": [
+    "application/json"
+  ],
+  "produces": [
+    "application/json"
+  ],
+  "paths": {
+    "/api/v1/doc/send": {
+      "post": {
+        "operationId": "DocumentService_SendDocument",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/go_edi_document_processorSendDocumentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "body",
+            "in": "body",
+            "required": true,
+            "schema": {
+              "$ref": "#/definitions/go_edi_document_processorSendDocumentRequest"
+            }
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
+    "/api/v1/doc/{uuid}": {
+      "get": {
+        "operationId": "DocumentService_GetDocumentByUUID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/go_edi_document_processorGetDocumentByUUIDResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "uuid",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    }
+  },
+  "definitions": {
+    "go_edi_document_processorDocument": {
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/definitions/go_edi_document_processorDocumentType"
+        },
+        "content": {
+          "type": "string",
+          "format": "byte"
+        },
+        "senderId": {
+          "type": "string"
+        },
+        "receiverId": {
+          "type": "string"
+        },
+        "metadata": {
+          "type": "object",
+          "additionalProperties": {
+            "type": "string"
+          }
+        },
+        "status": {
+          "$ref": "#/definitions/go_edi_document_processorDocumentStatus"
+        },
+        "processingTime": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "updatedAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    },
+    "go_edi_document_processorDocumentStatus": {
+      "type": "string",
+      "enum": [
+        "DOCUMENT_STATUS_UNSPECIFIED",
+        "DOCUMENT_STATUS_PENDING",
+        "DOCUMENT_STATUS_RECEIVED",
+        "DOCUMENT_STATUS_PROCESSED",
+        "DOCUMENT_STATUS_FAILED"
+      ],
+      "default": "DOCUMENT_STATUS_UNSPECIFIED"
+    },
+    "go_edi_document_processorDocumentType": {
+      "type": "string",
+      "enum": [
+        "DOCUMENT_TYPE_UNSPECIFIED",
+        "DOCUMENT_TYPE_XML",
+        "DOCUMENT_TYPE_PDF",
+        "DOCUMENT_TYPE_JSON"
+      ],
+      "default": "DOCUMENT_TYPE_UNSPECIFIED"
+    },
+    "go_edi_document_processorGetDocumentByUUIDResponse": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "$ref": "#/definitions/go_edi_document_processorDocument"
+        }
+      }
+    },
+    "go_edi_document_processorSendDocumentRequest": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "$ref": "#/definitions/go_edi_document_processorDocument"
+        }
+      }
+    },
+    "go_edi_document_processorSendDocumentResponse": {
+      "type": "object",
+      "properties": {
+        "documentId": {
+          "type": "string"
+        }
+      }
+    },
+    "protobufAny": {
+      "type": "object",
+      "properties": {
+        "@type": {
+          "type": "string"
+        }
+      },
+      "additionalProperties": {}
+    },
+    "rpcStatus": {
+      "type": "object",
+      "properties": {
+        "code": {
+          "type": "integer",
+          "format": "int32"
+        },
+        "message": {
+          "type": "string"
+        },
+        "details": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "$ref": "#/definitions/protobufAny"
+          }
+        }
+      }
+    }
+  }
+}

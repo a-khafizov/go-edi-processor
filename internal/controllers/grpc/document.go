@@ -6,7 +6,6 @@ import (
 	"github.com/go-edi-document-processor/api/proto"
 	"github.com/go-edi-document-processor/internal/infrastructure/logger"
 	"github.com/google/uuid"
-	"go.uber.org/zap"
 )
 
 type documentService struct {
@@ -19,7 +18,6 @@ func NewDocumentService(log *logger.Logger) proto.DocumentServiceServer {
 }
 
 func (s *documentService) SendDocument(ctx context.Context, req *proto.SendDocumentRequest) (*proto.SendDocumentResponse, error) {
-	s.log.Zap().Info("gRPC SendDocument called", zap.Any("request", req))
 	return &proto.SendDocumentResponse{
 		DocumentId: "generated-" + req.GetDocument().GetId(),
 	}, nil
