@@ -83,7 +83,7 @@
     "go_edi_document_processorDocument": {
       "type": "object",
       "properties": {
-        "id": {
+        "docId": {
           "type": "string"
         },
         "type": {
@@ -99,18 +99,8 @@
         "receiverId": {
           "type": "string"
         },
-        "metadata": {
-          "type": "object",
-          "additionalProperties": {
-            "type": "string"
-          }
-        },
         "status": {
           "$ref": "#/definitions/go_edi_document_processorDocumentStatus"
-        },
-        "processingTime": {
-          "type": "string",
-          "format": "date-time"
         },
         "createdAt": {
           "type": "string",

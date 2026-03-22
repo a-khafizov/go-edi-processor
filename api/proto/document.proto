@@ -23,14 +23,12 @@ enum DocumentStatus {
 }
 
 message Document {
-  string id = 1;
+  string doc_id = 1;
   DocumentType type = 2;
   bytes content = 3;
   string sender_id = 4;
   string receiver_id = 5;
-  map<string, string> metadata = 6;
   DocumentStatus status = 7;
-  google.protobuf.Timestamp processing_time = 8;
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
 }

@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"io"
 	"log"
 	"net/http"
 	"os"
@@ -10,62 +9,65 @@ import (
 	"syscall"
 	"time"
 
-	g "github.com/go-edi-document-processor/internal/controllers/grpc"
-	h "github.com/go-edi-document-processor/internal/controllers/http"
-	"github.com/go-edi-document-processor/internal/infrastructure/config"
-	"github.com/go-edi-document-processor/internal/infrastructure/logger"
-	"github.com/go-edi-document-processor/internal/infrastructure/tracing"
+	"github.com/go-edi-document-processor/internal/bootstrap/config"
+	"github.com/go-edi-document-processor/internal/bootstrap/logger"
+	g "github.com/go-edi-document-processor/internal/controllers/grpc_controllers"
+	h "github.com/go-edi-document-processor/internal/controllers/http_controllers"
 	"go.uber.org/zap"
 )
 
 func main() {
-	log.Printf("Starting service with environment: %s", config.Environment())
+	log.Printf("Starting service ...")
 
-	err := logger.InitGlobal(config.LogLevel(), config.IsDevelopment())
+	cfg, err := config.Load()
 	if err != nil {
-		log.Fatalf("Failed to initialize logger: %v", err)
+		log.Fatal("Failed to load configuration:", err)
 	}
-	logger := logger.GetGlobal()
-	defer logger.Sync()
 
-	shutdownTracing, err := tracing.InitTracing("go-edi-document-processor", io.Discard)
-	if err != nil {
-		logger.Zap().Fatal("Failed to initialize tracing", zap.Error(err))
-	}
-	defer shutdownTracing()
+	log := logger.NewLogger(cfg.LogLevel)
+	defer log.Sync()
 
-	httpPort := config.HTTPPort()
-	if httpPort == "" {
-		httpPort = "8080"
-	}
-	grpcPort := config.GRPCPort()
-	if grpcPort == "" {
-		grpcPort = "50051"
-	}
+	startTime := time.Now()
 
 	gatewayCtx := context.Background()
-	gatewayHandler, err := h.NewGatewayHandler(gatewayCtx, "localhost:"+grpcPort)
+	gatewayHandler, err := h.NewGatewayHandler(gatewayCtx, "localhost:"+cfg.GRPCPort)
 	if err != nil {
-		logger.Zap().Fatal("Failed to create gateway handler", zap.Error(err))
+		log.Error("Failed to create gateway handler",
+			zap.Error(err),
+		)
+		os.Exit(1)
 	}
 
 	httpServer := &http.Server{
-		Addr:    ":" + httpPort,
+		Addr:    ":" + cfg.HTTPPort,
 		Handler: gatewayHandler,
 	}
 
-	grpcServer := g.NewGrpcServer(logger, grpcPort)
+	grpcServer := g.NewGrpcServer(log, cfg.GRPCPort)
 
 	go func() {
-		logger.Zap().Info("Starting HTTP server", zap.String("port", httpPort))
-		if err := httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			logger.Zap().Fatal("HTTP server failed", zap.Error(err))
+		log.Info("Starting HTTP server",
+			zap.String("port", cfg.HTTPPort),
+		)
+
+		err := httpServer.ListenAndServe()
+		if err != nil && err != http.ErrServerClosed {
+			log.Error("HTTP server failed",
+				zap.Error(err),
+			)
 		}
 	}()
 
 	go func() {
-		if err := grpcServer.Start(); err != nil {
-			logger.Zap().Fatal("gRPC server failed", zap.Error(err))
+		log.Info("Starting gRPC server",
+			zap.String("port", cfg.GRPCPort),
+		)
+
+		err := grpcServer.Start()
+		if err != nil {
+			log.Error("gRPC server failed",
+				zap.Error(err),
+			)
 		}
 	}()
 
@@ -73,15 +75,21 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	logger.Zap().Info("Shutting down servers...")
+	log.Info("Shutting down servers...",
+		zap.Duration("uptime", time.Since(startTime)),
+	)
 
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
 
 	if err := httpServer.Shutdown(ctx); err != nil {
-		logger.Zap().Error("HTTP server shutdown error", zap.Error(err))
+		log.Error("HTTP server shutdown failed",
+			zap.Error(err),
+		)
 	}
 	grpcServer.Stop()
 
-	logger.Zap().Info("Servers stopped gracefully")
+	log.Info("Servers stopped gracefully",
+		zap.Duration("total_uptime", time.Since(startTime)),
+	)
 }

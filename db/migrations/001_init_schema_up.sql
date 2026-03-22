@@ -1,13 +1,11 @@
 create table if not exists documents (
-    id uuid primary key default gen_random_uuid(),
-    external_id varchar(255) not null unique,
-    document_type varchar(50) not null check (document_type in ('xml', 'pdf', 'json')),
-    content_base64 text not null,
-    sender_id varchar(255) not null,
+    id primary key default gen_random_uuid(),
+    doc_id varchar(255) not null unique,
+    doc_type varchar(50) not null check (doc_type in ('xml', 'pdf', 'json')),
+    content text not null,
+    sender_id varchar(255),
     receiver_id varchar(255) not null,
-    metadata jsonb,
-    status varchar(20) not null default 'pending' check (status in ('pending', 'received', 'processed', 'failed')),
-    processing_time timestamp with time zone,
+    status varchar(20) default 'pending' check (status in ('pending', 'received', 'processed', 'failed')),
     created_at timestamp with time zone default now(),
     updated_at timestamp with time zone default now()
 );
