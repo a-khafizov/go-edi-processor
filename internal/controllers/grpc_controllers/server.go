@@ -4,6 +4,7 @@ import (
 	"net"
 
 	"github.com/go-edi-document-processor/api/proto"
+	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 
 	"google.golang.org/grpc"
@@ -15,15 +16,17 @@ type GrpcServer struct {
 	logger *zap.Logger
 }
 
-func NewGrpcServer(logger *zap.Logger, port string) *GrpcServer {
-	interceptor := NewInterceptor(logger)
+func NewGrpcServer(logger *zap.Logger, port string, tracer trace.Tracer) *GrpcServer {
+	interceptor := NewInterceptor(logger, tracer)
 
 	recovery := interceptor.RecoveryInterceptor()
+	tracing := interceptor.TracingInterceptor()
 	logging := interceptor.LoggingInterceptor()
 
 	grpcServer := grpc.NewServer(
 		grpc.ChainUnaryInterceptor(
 			recovery,
+			tracing,
 			logging,
 		),
 	)

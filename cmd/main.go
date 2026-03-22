@@ -11,6 +11,7 @@ import (
 
 	"github.com/go-edi-document-processor/internal/bootstrap/config"
 	"github.com/go-edi-document-processor/internal/bootstrap/logger"
+	"github.com/go-edi-document-processor/internal/bootstrap/tracing"
 	g "github.com/go-edi-document-processor/internal/controllers/grpc_controllers"
 	h "github.com/go-edi-document-processor/internal/controllers/http_controllers"
 	"go.uber.org/zap"
@@ -26,6 +27,15 @@ func main() {
 
 	log := logger.NewLogger(cfg.LogLevel)
 	defer log.Sync()
+
+	serviceName := "go-edi-document-processor"
+	if err := tracing.InitTracerProvider(serviceName); err != nil {
+		log.Error("Failed to initialize tracing",
+			zap.Error(err),
+		)
+		os.Exit(1)
+	}
+	defer tracing.Shutdown(context.Background())
 
 	startTime := time.Now()
 
@@ -43,7 +53,8 @@ func main() {
 		Handler: gatewayHandler,
 	}
 
-	grpcServer := g.NewGrpcServer(log, cfg.GRPCPort)
+	tracer := tracing.GetTracer("grpc")
+	grpcServer := g.NewGrpcServer(log, cfg.GRPCPort, tracer)
 
 	go func() {
 		log.Info("Starting HTTP server",
