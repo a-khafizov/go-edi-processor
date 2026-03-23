@@ -1,4 +1,4 @@
-package grpc_controllers
+package deps
 
 import (
 	"net"
@@ -11,12 +11,13 @@ import (
 )
 
 type GrpcServer struct {
-	server *grpc.Server
-	port   string
-	logger *zap.Logger
+	server                     *grpc.Server
+	port                       string
+	logger                     *zap.Logger
+	protoDocumentServiceServer proto.DocumentServiceServer
 }
 
-func NewGrpcServer(logger *zap.Logger, port string, tracer trace.Tracer) *GrpcServer {
+func NewGrpcServer(logger *zap.Logger, port string, tracer trace.Tracer, protoDocumentServiceServer proto.DocumentServiceServer) *GrpcServer {
 	interceptor := NewInterceptor(logger, tracer)
 
 	recovery := interceptor.RecoveryInterceptor()
@@ -31,13 +32,13 @@ func NewGrpcServer(logger *zap.Logger, port string, tracer trace.Tracer) *GrpcSe
 		),
 	)
 
-	docService := NewDocumentService(logger)
-	proto.RegisterDocumentServiceServer(grpcServer, docService)
+	proto.RegisterDocumentServiceServer(grpcServer, protoDocumentServiceServer)
 
 	return &GrpcServer{
-		server: grpcServer,
-		port:   port,
-		logger: logger,
+		server:                     grpcServer,
+		port:                       port,
+		logger:                     logger,
+		protoDocumentServiceServer: protoDocumentServiceServer,
 	}
 }
 

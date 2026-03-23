@@ -734,3 +734,236 @@ var _ interface {
 	Cause() error
 	ErrorName() string
 } = GetDocumentByUUIDResponseValidationError{}
+
+// Validate checks the field values on ReceiveDocumentRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ReceiveDocumentRequest) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ReceiveDocumentRequest with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ReceiveDocumentRequestMultiError, or nil if none found.
+func (m *ReceiveDocumentRequest) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReceiveDocumentRequest) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if len(errors) > 0 {
+		return ReceiveDocumentRequestMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReceiveDocumentRequestMultiError is an error wrapping multiple validation
+// errors returned by ReceiveDocumentRequest.ValidateAll() if the designated
+// constraints aren't met.
+type ReceiveDocumentRequestMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReceiveDocumentRequestMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReceiveDocumentRequestMultiError) AllErrors() []error { return m }
+
+// ReceiveDocumentRequestValidationError is the validation error returned by
+// ReceiveDocumentRequest.Validate if the designated constraints aren't met.
+type ReceiveDocumentRequestValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReceiveDocumentRequestValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReceiveDocumentRequestValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReceiveDocumentRequestValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReceiveDocumentRequestValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReceiveDocumentRequestValidationError) ErrorName() string {
+	return "ReceiveDocumentRequestValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ReceiveDocumentRequestValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReceiveDocumentRequest.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReceiveDocumentRequestValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReceiveDocumentRequestValidationError{}
+
+// Validate checks the field values on ReceiveDocumentResponse with the rules
+// defined in the proto definition for this message. If any rules are
+// violated, the first error encountered is returned, or nil if there are no violations.
+func (m *ReceiveDocumentResponse) Validate() error {
+	return m.validate(false)
+}
+
+// ValidateAll checks the field values on ReceiveDocumentResponse with the
+// rules defined in the proto definition for this message. If any rules are
+// violated, the result is a list of violation errors wrapped in
+// ReceiveDocumentResponseMultiError, or nil if none found.
+func (m *ReceiveDocumentResponse) ValidateAll() error {
+	return m.validate(true)
+}
+
+func (m *ReceiveDocumentResponse) validate(all bool) error {
+	if m == nil {
+		return nil
+	}
+
+	var errors []error
+
+	if all {
+		switch v := interface{}(m.GetDocument()).(type) {
+		case interface{ ValidateAll() error }:
+			if err := v.ValidateAll(); err != nil {
+				errors = append(errors, ReceiveDocumentResponseValidationError{
+					field:  "Document",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		case interface{ Validate() error }:
+			if err := v.Validate(); err != nil {
+				errors = append(errors, ReceiveDocumentResponseValidationError{
+					field:  "Document",
+					reason: "embedded message failed validation",
+					cause:  err,
+				})
+			}
+		}
+	} else if v, ok := interface{}(m.GetDocument()).(interface{ Validate() error }); ok {
+		if err := v.Validate(); err != nil {
+			return ReceiveDocumentResponseValidationError{
+				field:  "Document",
+				reason: "embedded message failed validation",
+				cause:  err,
+			}
+		}
+	}
+
+	if len(errors) > 0 {
+		return ReceiveDocumentResponseMultiError(errors)
+	}
+
+	return nil
+}
+
+// ReceiveDocumentResponseMultiError is an error wrapping multiple validation
+// errors returned by ReceiveDocumentResponse.ValidateAll() if the designated
+// constraints aren't met.
+type ReceiveDocumentResponseMultiError []error
+
+// Error returns a concatenation of all the error messages it wraps.
+func (m ReceiveDocumentResponseMultiError) Error() string {
+	msgs := make([]string, 0, len(m))
+	for _, err := range m {
+		msgs = append(msgs, err.Error())
+	}
+	return strings.Join(msgs, "; ")
+}
+
+// AllErrors returns a list of validation violation errors.
+func (m ReceiveDocumentResponseMultiError) AllErrors() []error { return m }
+
+// ReceiveDocumentResponseValidationError is the validation error returned by
+// ReceiveDocumentResponse.Validate if the designated constraints aren't met.
+type ReceiveDocumentResponseValidationError struct {
+	field  string
+	reason string
+	cause  error
+	key    bool
+}
+
+// Field function returns field value.
+func (e ReceiveDocumentResponseValidationError) Field() string { return e.field }
+
+// Reason function returns reason value.
+func (e ReceiveDocumentResponseValidationError) Reason() string { return e.reason }
+
+// Cause function returns cause value.
+func (e ReceiveDocumentResponseValidationError) Cause() error { return e.cause }
+
+// Key function returns key value.
+func (e ReceiveDocumentResponseValidationError) Key() bool { return e.key }
+
+// ErrorName returns error name.
+func (e ReceiveDocumentResponseValidationError) ErrorName() string {
+	return "ReceiveDocumentResponseValidationError"
+}
+
+// Error satisfies the builtin error interface
+func (e ReceiveDocumentResponseValidationError) Error() string {
+	cause := ""
+	if e.cause != nil {
+		cause = fmt.Sprintf(" | caused by: %v", e.cause)
+	}
+
+	key := ""
+	if e.key {
+		key = "key for "
+	}
+
+	return fmt.Sprintf(
+		"invalid %sReceiveDocumentResponse.%s: %s%s",
+		key,
+		e.field,
+		e.reason,
+		cause)
+}
+
+var _ error = ReceiveDocumentResponseValidationError{}
+
+var _ interface {
+	Field() string
+	Reason() string
+	Key() bool
+	Cause() error
+	ErrorName() string
+} = ReceiveDocumentResponseValidationError{}

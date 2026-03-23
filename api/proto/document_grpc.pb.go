@@ -21,6 +21,7 @@ const _ = grpc.SupportPackageIsVersion9
 const (
 	DocumentService_SendDocument_FullMethodName      = "/go_edi_document_processor.DocumentService/SendDocument"
 	DocumentService_GetDocumentByUUID_FullMethodName = "/go_edi_document_processor.DocumentService/GetDocumentByUUID"
+	DocumentService_ReceiveDocument_FullMethodName   = "/go_edi_document_processor.DocumentService/ReceiveDocument"
 )
 
 // DocumentServiceClient is the client API for DocumentService service.
@@ -29,6 +30,7 @@ const (
 type DocumentServiceClient interface {
 	SendDocument(ctx context.Context, in *SendDocumentRequest, opts ...grpc.CallOption) (*SendDocumentResponse, error)
 	GetDocumentByUUID(ctx context.Context, in *GetDocumentByUUIDRequest, opts ...grpc.CallOption) (*GetDocumentByUUIDResponse, error)
+	ReceiveDocument(ctx context.Context, in *ReceiveDocumentRequest, opts ...grpc.CallOption) (*ReceiveDocumentResponse, error)
 }
 
 type documentServiceClient struct {
@@ -59,12 +61,23 @@ func (c *documentServiceClient) GetDocumentByUUID(ctx context.Context, in *GetDo
 	return out, nil
 }
 
+func (c *documentServiceClient) ReceiveDocument(ctx context.Context, in *ReceiveDocumentRequest, opts ...grpc.CallOption) (*ReceiveDocumentResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(ReceiveDocumentResponse)
+	err := c.cc.Invoke(ctx, DocumentService_ReceiveDocument_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // DocumentServiceServer is the server API for DocumentService service.
 // All implementations must embed UnimplementedDocumentServiceServer
 // for forward compatibility.
 type DocumentServiceServer interface {
 	SendDocument(context.Context, *SendDocumentRequest) (*SendDocumentResponse, error)
 	GetDocumentByUUID(context.Context, *GetDocumentByUUIDRequest) (*GetDocumentByUUIDResponse, error)
+	ReceiveDocument(context.Context, *ReceiveDocumentRequest) (*ReceiveDocumentResponse, error)
 	mustEmbedUnimplementedDocumentServiceServer()
 }
 
@@ -80,6 +93,9 @@ func (UnimplementedDocumentServiceServer) SendDocument(context.Context, *SendDoc
 }
 func (UnimplementedDocumentServiceServer) GetDocumentByUUID(context.Context, *GetDocumentByUUIDRequest) (*GetDocumentByUUIDResponse, error) {
 	return nil, status.Error(codes.Unimplemented, "method GetDocumentByUUID not implemented")
+}
+func (UnimplementedDocumentServiceServer) ReceiveDocument(context.Context, *ReceiveDocumentRequest) (*ReceiveDocumentResponse, error) {
+	return nil, status.Error(codes.Unimplemented, "method ReceiveDocument not implemented")
 }
 func (UnimplementedDocumentServiceServer) mustEmbedUnimplementedDocumentServiceServer() {}
 func (UnimplementedDocumentServiceServer) testEmbeddedByValue()                         {}
@@ -138,6 +154,24 @@ func _DocumentService_GetDocumentByUUID_Handler(srv interface{}, ctx context.Con
 	return interceptor(ctx, in, info, handler)
 }
 
+func _DocumentService_ReceiveDocument_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ReceiveDocumentRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(DocumentServiceServer).ReceiveDocument(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: DocumentService_ReceiveDocument_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(DocumentServiceServer).ReceiveDocument(ctx, req.(*ReceiveDocumentRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // DocumentService_ServiceDesc is the grpc.ServiceDesc for DocumentService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -152,6 +186,10 @@ var DocumentService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "GetDocumentByUUID",
 			Handler:    _DocumentService_GetDocumentByUUID_Handler,
+		},
+		{
+			MethodName: "ReceiveDocument",
+			Handler:    _DocumentService_ReceiveDocument_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

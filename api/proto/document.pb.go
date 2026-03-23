@@ -418,6 +418,86 @@ func (x *GetDocumentByUUIDResponse) GetDocument() *Document {
 	return nil
 }
 
+type ReceiveDocumentRequest struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReceiveDocumentRequest) Reset() {
+	*x = ReceiveDocumentRequest{}
+	mi := &file_document_proto_msgTypes[5]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReceiveDocumentRequest) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReceiveDocumentRequest) ProtoMessage() {}
+
+func (x *ReceiveDocumentRequest) ProtoReflect() protoreflect.Message {
+	mi := &file_document_proto_msgTypes[5]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReceiveDocumentRequest.ProtoReflect.Descriptor instead.
+func (*ReceiveDocumentRequest) Descriptor() ([]byte, []int) {
+	return file_document_proto_rawDescGZIP(), []int{5}
+}
+
+type ReceiveDocumentResponse struct {
+	state         protoimpl.MessageState `protogen:"open.v1"`
+	Document      *Document              `protobuf:"bytes,1,opt,name=document,proto3" json:"document,omitempty"`
+	unknownFields protoimpl.UnknownFields
+	sizeCache     protoimpl.SizeCache
+}
+
+func (x *ReceiveDocumentResponse) Reset() {
+	*x = ReceiveDocumentResponse{}
+	mi := &file_document_proto_msgTypes[6]
+	ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+	ms.StoreMessageInfo(mi)
+}
+
+func (x *ReceiveDocumentResponse) String() string {
+	return protoimpl.X.MessageStringOf(x)
+}
+
+func (*ReceiveDocumentResponse) ProtoMessage() {}
+
+func (x *ReceiveDocumentResponse) ProtoReflect() protoreflect.Message {
+	mi := &file_document_proto_msgTypes[6]
+	if x != nil {
+		ms := protoimpl.X.MessageStateOf(protoimpl.Pointer(x))
+		if ms.LoadMessageInfo() == nil {
+			ms.StoreMessageInfo(mi)
+		}
+		return ms
+	}
+	return mi.MessageOf(x)
+}
+
+// Deprecated: Use ReceiveDocumentResponse.ProtoReflect.Descriptor instead.
+func (*ReceiveDocumentResponse) Descriptor() ([]byte, []int) {
+	return file_document_proto_rawDescGZIP(), []int{6}
+}
+
+func (x *ReceiveDocumentResponse) GetDocument() *Document {
+	if x != nil {
+		return x.Document
+	}
+	return nil
+}
+
 var File_document_proto protoreflect.FileDescriptor
 
 const file_document_proto_rawDesc = "" +
@@ -444,6 +524,9 @@ const file_document_proto_rawDesc = "" +
 	"\x18GetDocumentByUUIDRequest\x12\x1c\n" +
 	"\x04uuid\x18\x01 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\x04uuid\"\\\n" +
 	"\x19GetDocumentByUUIDResponse\x12?\n" +
+	"\bdocument\x18\x01 \x01(\v2#.go_edi_document_processor.DocumentR\bdocument\"\x18\n" +
+	"\x16ReceiveDocumentRequest\"Z\n" +
+	"\x17ReceiveDocumentResponse\x12?\n" +
 	"\bdocument\x18\x01 \x01(\v2#.go_edi_document_processor.DocumentR\bdocument*_\n" +
 	"\fDocumentType\x12\x18\n" +
 	"\x14DOC_TYPE_UNSPECIFIED\x10\x00\x12\x10\n" +
@@ -456,10 +539,11 @@ const file_document_proto_rawDesc = "" +
 	"\x13DOC_STATUS_RECEIVED\x10\x02\x12\x18\n" +
 	"\x14DOC_STATUS_PROCESSED\x10\x03\x12\x15\n" +
 	"\x11DOC_STATUS_FAILED\x10\x04\x12\x19\n" +
-	"\x15DOC_STATUS_SUCCESSFUL\x10\x052\xbd\x02\n" +
+	"\x15DOC_STATUS_SUCCESSFUL\x10\x052\xd5\x03\n" +
 	"\x0fDocumentService\x12\x8c\x01\n" +
 	"\fSendDocument\x12..go_edi_document_processor.SendDocumentRequest\x1a/.go_edi_document_processor.SendDocumentResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/api/v1/doc/send\x12\x9a\x01\n" +
-	"\x11GetDocumentByUUID\x123.go_edi_document_processor.GetDocumentByUUIDRequest\x1a4.go_edi_document_processor.GetDocumentByUUIDResponse\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/api/v1/doc/{uuid}B6Z4github.com/go-edi-document-processor/api/proto;protob\x06proto3"
+	"\x11GetDocumentByUUID\x123.go_edi_document_processor.GetDocumentByUUIDRequest\x1a4.go_edi_document_processor.GetDocumentByUUIDResponse\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/api/v1/doc/{uuid}\x12\x95\x01\n" +
+	"\x0fReceiveDocument\x121.go_edi_document_processor.ReceiveDocumentRequest\x1a2.go_edi_document_processor.ReceiveDocumentResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/doc/receiveB6Z4github.com/go-edi-document-processor/api/proto;protob\x06proto3"
 
 var (
 	file_document_proto_rawDescOnce sync.Once
@@ -474,7 +558,7 @@ func file_document_proto_rawDescGZIP() []byte {
 }
 
 var file_document_proto_enumTypes = make([]protoimpl.EnumInfo, 2)
-var file_document_proto_msgTypes = make([]protoimpl.MessageInfo, 5)
+var file_document_proto_msgTypes = make([]protoimpl.MessageInfo, 7)
 var file_document_proto_goTypes = []any{
 	(DocumentType)(0),                 // 0: go_edi_document_processor.DocumentType
 	(DocumentStatus)(0),               // 1: go_edi_document_processor.DocumentStatus
@@ -483,25 +567,30 @@ var file_document_proto_goTypes = []any{
 	(*SendDocumentResponse)(nil),      // 4: go_edi_document_processor.SendDocumentResponse
 	(*GetDocumentByUUIDRequest)(nil),  // 5: go_edi_document_processor.GetDocumentByUUIDRequest
 	(*GetDocumentByUUIDResponse)(nil), // 6: go_edi_document_processor.GetDocumentByUUIDResponse
-	(*timestamppb.Timestamp)(nil),     // 7: google.protobuf.Timestamp
+	(*ReceiveDocumentRequest)(nil),    // 7: go_edi_document_processor.ReceiveDocumentRequest
+	(*ReceiveDocumentResponse)(nil),   // 8: go_edi_document_processor.ReceiveDocumentResponse
+	(*timestamppb.Timestamp)(nil),     // 9: google.protobuf.Timestamp
 }
 var file_document_proto_depIdxs = []int32{
-	0, // 0: go_edi_document_processor.Document.type:type_name -> go_edi_document_processor.DocumentType
-	1, // 1: go_edi_document_processor.Document.status:type_name -> go_edi_document_processor.DocumentStatus
-	7, // 2: go_edi_document_processor.Document.created_at:type_name -> google.protobuf.Timestamp
-	7, // 3: go_edi_document_processor.Document.updated_at:type_name -> google.protobuf.Timestamp
-	2, // 4: go_edi_document_processor.SendDocumentRequest.document:type_name -> go_edi_document_processor.Document
-	1, // 5: go_edi_document_processor.SendDocumentResponse.status:type_name -> go_edi_document_processor.DocumentStatus
-	2, // 6: go_edi_document_processor.GetDocumentByUUIDResponse.document:type_name -> go_edi_document_processor.Document
-	3, // 7: go_edi_document_processor.DocumentService.SendDocument:input_type -> go_edi_document_processor.SendDocumentRequest
-	5, // 8: go_edi_document_processor.DocumentService.GetDocumentByUUID:input_type -> go_edi_document_processor.GetDocumentByUUIDRequest
-	4, // 9: go_edi_document_processor.DocumentService.SendDocument:output_type -> go_edi_document_processor.SendDocumentResponse
-	6, // 10: go_edi_document_processor.DocumentService.GetDocumentByUUID:output_type -> go_edi_document_processor.GetDocumentByUUIDResponse
-	9, // [9:11] is the sub-list for method output_type
-	7, // [7:9] is the sub-list for method input_type
-	7, // [7:7] is the sub-list for extension type_name
-	7, // [7:7] is the sub-list for extension extendee
-	0, // [0:7] is the sub-list for field type_name
+	0,  // 0: go_edi_document_processor.Document.type:type_name -> go_edi_document_processor.DocumentType
+	1,  // 1: go_edi_document_processor.Document.status:type_name -> go_edi_document_processor.DocumentStatus
+	9,  // 2: go_edi_document_processor.Document.created_at:type_name -> google.protobuf.Timestamp
+	9,  // 3: go_edi_document_processor.Document.updated_at:type_name -> google.protobuf.Timestamp
+	2,  // 4: go_edi_document_processor.SendDocumentRequest.document:type_name -> go_edi_document_processor.Document
+	1,  // 5: go_edi_document_processor.SendDocumentResponse.status:type_name -> go_edi_document_processor.DocumentStatus
+	2,  // 6: go_edi_document_processor.GetDocumentByUUIDResponse.document:type_name -> go_edi_document_processor.Document
+	2,  // 7: go_edi_document_processor.ReceiveDocumentResponse.document:type_name -> go_edi_document_processor.Document
+	3,  // 8: go_edi_document_processor.DocumentService.SendDocument:input_type -> go_edi_document_processor.SendDocumentRequest
+	5,  // 9: go_edi_document_processor.DocumentService.GetDocumentByUUID:input_type -> go_edi_document_processor.GetDocumentByUUIDRequest
+	7,  // 10: go_edi_document_processor.DocumentService.ReceiveDocument:input_type -> go_edi_document_processor.ReceiveDocumentRequest
+	4,  // 11: go_edi_document_processor.DocumentService.SendDocument:output_type -> go_edi_document_processor.SendDocumentResponse
+	6,  // 12: go_edi_document_processor.DocumentService.GetDocumentByUUID:output_type -> go_edi_document_processor.GetDocumentByUUIDResponse
+	8,  // 13: go_edi_document_processor.DocumentService.ReceiveDocument:output_type -> go_edi_document_processor.ReceiveDocumentResponse
+	11, // [11:14] is the sub-list for method output_type
+	8,  // [8:11] is the sub-list for method input_type
+	8,  // [8:8] is the sub-list for extension type_name
+	8,  // [8:8] is the sub-list for extension extendee
+	0,  // [0:8] is the sub-list for field type_name
 }
 
 func init() { file_document_proto_init() }
@@ -515,7 +604,7 @@ func file_document_proto_init() {
 			GoPackagePath: reflect.TypeOf(x{}).PkgPath(),
 			RawDescriptor: unsafe.Slice(unsafe.StringData(file_document_proto_rawDesc), len(file_document_proto_rawDesc)),
 			NumEnums:      2,
-			NumMessages:   5,
+			NumMessages:   7,
 			NumExtensions: 0,
 			NumServices:   1,
 		},

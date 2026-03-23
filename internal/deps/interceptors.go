@@ -1,4 +1,4 @@
-package grpc_controllers
+package deps
 
 import (
 	"context"

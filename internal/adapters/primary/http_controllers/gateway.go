@@ -1,4 +1,4 @@
-package http_controllers
+package adapters
 
 import (
 	"context"
@@ -10,7 +10,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 )
 
-func NewGatewayHandler(ctx context.Context, grpcEndpoint string) (http.Handler, error) {
+func NewHttpControllers(ctx context.Context, grpcEndpoint string) (http.Handler, error) {
 	mux := runtime.NewServeMux()
 	opts := []grpc.DialOption{
 		grpc.WithTransportCredentials(insecure.NewCredentials()),

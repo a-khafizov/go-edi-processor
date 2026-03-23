@@ -16,6 +16,28 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/doc/receive": {
+      "get": {
+        "operationId": "DocumentService_ReceiveDocument",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/go_edi_document_processorReceiveDocumentResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/doc/send": {
       "post": {
         "operationId": "DocumentService_SendDocument",
@@ -135,6 +157,14 @@
       "default": "DOC_TYPE_UNSPECIFIED"
     },
     "go_edi_document_processorGetDocumentByUUIDResponse": {
+      "type": "object",
+      "properties": {
+        "document": {
+          "$ref": "#/definitions/go_edi_document_processorDocument"
+        }
+      }
+    },
+    "go_edi_document_processorReceiveDocumentResponse": {
       "type": "object",
       "properties": {
         "document": {

@@ -52,6 +52,13 @@ message GetDocumentByUUIDResponse {
   Document document = 1;
 }
 
+message ReceiveDocumentRequest {
+}
+
+message ReceiveDocumentResponse {
+  Document document = 1;
+}
+
 service DocumentService {
   rpc SendDocument(SendDocumentRequest) returns (SendDocumentResponse) {
     option (google.api.http) = {
@@ -62,6 +69,11 @@ service DocumentService {
   rpc GetDocumentByUUID(GetDocumentByUUIDRequest) returns (GetDocumentByUUIDResponse) {
     option (google.api.http) = {
       get: "/api/v1/doc/{uuid}"
+    };
+  }
+  rpc ReceiveDocument(ReceiveDocumentRequest) returns (ReceiveDocumentResponse) {
+    option (google.api.http) = {
+      get: "/api/v1/doc/receive"
     };
   }
 }

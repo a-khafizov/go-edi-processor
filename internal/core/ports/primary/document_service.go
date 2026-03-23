@@ -7,6 +7,7 @@ import (
 )
 
 type DocumentService interface {
+	SendDocument(ctx context.Context, doc *domain.Document) (*domain.Document, error)
+	ReceiveDocument(ctx context.Context) (*domain.Document, error)
 	GetDocumentByUUID(ctx context.Context, uuid string) (*domain.Document, error)
-	SendDocument(ctx context.Context, doc *domain.Document) error
 }
