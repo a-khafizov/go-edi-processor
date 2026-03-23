@@ -115,23 +115,24 @@
     "go_edi_document_processorDocumentStatus": {
       "type": "string",
       "enum": [
-        "DOCUMENT_STATUS_UNSPECIFIED",
-        "DOCUMENT_STATUS_PENDING",
-        "DOCUMENT_STATUS_RECEIVED",
-        "DOCUMENT_STATUS_PROCESSED",
-        "DOCUMENT_STATUS_FAILED"
+        "DOC_STATUS_UNSPECIFIED",
+        "DOC_STATUS_PENDING",
+        "DOC_STATUS_RECEIVED",
+        "DOC_STATUS_PROCESSED",
+        "DOC_STATUS_FAILED",
+        "DOC_STATUS_SUCCESSFUL"
       ],
-      "default": "DOCUMENT_STATUS_UNSPECIFIED"
+      "default": "DOC_STATUS_UNSPECIFIED"
     },
     "go_edi_document_processorDocumentType": {
       "type": "string",
       "enum": [
-        "DOCUMENT_TYPE_UNSPECIFIED",
-        "DOCUMENT_TYPE_XML",
-        "DOCUMENT_TYPE_PDF",
-        "DOCUMENT_TYPE_JSON"
+        "DOC_TYPE_UNSPECIFIED",
+        "DOC_TYPE_XML",
+        "DOC_TYPE_PDF",
+        "DOC_TYPE_JSON"
       ],
-      "default": "DOCUMENT_TYPE_UNSPECIFIED"
+      "default": "DOC_TYPE_UNSPECIFIED"
     },
     "go_edi_document_processorGetDocumentByUUIDResponse": {
       "type": "object",
@@ -152,8 +153,11 @@
     "go_edi_document_processorSendDocumentResponse": {
       "type": "object",
       "properties": {
-        "documentId": {
+        "docId": {
           "type": "string"
+        },
+        "status": {
+          "$ref": "#/definitions/go_edi_document_processorDocumentStatus"
         }
       }
     },

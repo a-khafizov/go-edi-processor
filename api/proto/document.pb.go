@@ -7,6 +7,7 @@
 package proto
 
 import (
+	_ "github.com/envoyproxy/protoc-gen-validate/validate"
 	_ "google.golang.org/genproto/googleapis/api/annotations"
 	protoreflect "google.golang.org/protobuf/reflect/protoreflect"
 	protoimpl "google.golang.org/protobuf/runtime/protoimpl"
@@ -26,25 +27,25 @@ const (
 type DocumentType int32
 
 const (
-	DocumentType_DOCUMENT_TYPE_UNSPECIFIED DocumentType = 0
-	DocumentType_DOCUMENT_TYPE_XML         DocumentType = 1
-	DocumentType_DOCUMENT_TYPE_PDF         DocumentType = 2
-	DocumentType_DOCUMENT_TYPE_JSON        DocumentType = 3
+	DocumentType_DOC_TYPE_UNSPECIFIED DocumentType = 0
+	DocumentType_DOC_TYPE_XML         DocumentType = 1
+	DocumentType_DOC_TYPE_PDF         DocumentType = 2
+	DocumentType_DOC_TYPE_JSON        DocumentType = 3
 )
 
 // Enum value maps for DocumentType.
 var (
 	DocumentType_name = map[int32]string{
-		0: "DOCUMENT_TYPE_UNSPECIFIED",
-		1: "DOCUMENT_TYPE_XML",
-		2: "DOCUMENT_TYPE_PDF",
-		3: "DOCUMENT_TYPE_JSON",
+		0: "DOC_TYPE_UNSPECIFIED",
+		1: "DOC_TYPE_XML",
+		2: "DOC_TYPE_PDF",
+		3: "DOC_TYPE_JSON",
 	}
 	DocumentType_value = map[string]int32{
-		"DOCUMENT_TYPE_UNSPECIFIED": 0,
-		"DOCUMENT_TYPE_XML":         1,
-		"DOCUMENT_TYPE_PDF":         2,
-		"DOCUMENT_TYPE_JSON":        3,
+		"DOC_TYPE_UNSPECIFIED": 0,
+		"DOC_TYPE_XML":         1,
+		"DOC_TYPE_PDF":         2,
+		"DOC_TYPE_JSON":        3,
 	}
 )
 
@@ -78,28 +79,31 @@ func (DocumentType) EnumDescriptor() ([]byte, []int) {
 type DocumentStatus int32
 
 const (
-	DocumentStatus_DOCUMENT_STATUS_UNSPECIFIED DocumentStatus = 0
-	DocumentStatus_DOCUMENT_STATUS_PENDING     DocumentStatus = 1
-	DocumentStatus_DOCUMENT_STATUS_RECEIVED    DocumentStatus = 2
-	DocumentStatus_DOCUMENT_STATUS_PROCESSED   DocumentStatus = 3
-	DocumentStatus_DOCUMENT_STATUS_FAILED      DocumentStatus = 4
+	DocumentStatus_DOC_STATUS_UNSPECIFIED DocumentStatus = 0
+	DocumentStatus_DOC_STATUS_PENDING     DocumentStatus = 1
+	DocumentStatus_DOC_STATUS_RECEIVED    DocumentStatus = 2
+	DocumentStatus_DOC_STATUS_PROCESSED   DocumentStatus = 3
+	DocumentStatus_DOC_STATUS_FAILED      DocumentStatus = 4
+	DocumentStatus_DOC_STATUS_SUCCESSFUL  DocumentStatus = 5
 )
 
 // Enum value maps for DocumentStatus.
 var (
 	DocumentStatus_name = map[int32]string{
-		0: "DOCUMENT_STATUS_UNSPECIFIED",
-		1: "DOCUMENT_STATUS_PENDING",
-		2: "DOCUMENT_STATUS_RECEIVED",
-		3: "DOCUMENT_STATUS_PROCESSED",
-		4: "DOCUMENT_STATUS_FAILED",
+		0: "DOC_STATUS_UNSPECIFIED",
+		1: "DOC_STATUS_PENDING",
+		2: "DOC_STATUS_RECEIVED",
+		3: "DOC_STATUS_PROCESSED",
+		4: "DOC_STATUS_FAILED",
+		5: "DOC_STATUS_SUCCESSFUL",
 	}
 	DocumentStatus_value = map[string]int32{
-		"DOCUMENT_STATUS_UNSPECIFIED": 0,
-		"DOCUMENT_STATUS_PENDING":     1,
-		"DOCUMENT_STATUS_RECEIVED":    2,
-		"DOCUMENT_STATUS_PROCESSED":   3,
-		"DOCUMENT_STATUS_FAILED":      4,
+		"DOC_STATUS_UNSPECIFIED": 0,
+		"DOC_STATUS_PENDING":     1,
+		"DOC_STATUS_RECEIVED":    2,
+		"DOC_STATUS_PROCESSED":   3,
+		"DOC_STATUS_FAILED":      4,
+		"DOC_STATUS_SUCCESSFUL":  5,
 	}
 )
 
@@ -185,7 +189,7 @@ func (x *Document) GetType() DocumentType {
 	if x != nil {
 		return x.Type
 	}
-	return DocumentType_DOCUMENT_TYPE_UNSPECIFIED
+	return DocumentType_DOC_TYPE_UNSPECIFIED
 }
 
 func (x *Document) GetContent() []byte {
@@ -213,7 +217,7 @@ func (x *Document) GetStatus() DocumentStatus {
 	if x != nil {
 		return x.Status
 	}
-	return DocumentStatus_DOCUMENT_STATUS_UNSPECIFIED
+	return DocumentStatus_DOC_STATUS_UNSPECIFIED
 }
 
 func (x *Document) GetCreatedAt() *timestamppb.Timestamp {
@@ -276,7 +280,8 @@ func (x *SendDocumentRequest) GetDocument() *Document {
 
 type SendDocumentResponse struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	DocumentId    string                 `protobuf:"bytes,1,opt,name=document_id,json=documentId,proto3" json:"document_id,omitempty"`
+	DocId         string                 `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
+	Status        DocumentStatus         `protobuf:"varint,2,opt,name=status,proto3,enum=go_edi_document_processor.DocumentStatus" json:"status,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -311,11 +316,18 @@ func (*SendDocumentResponse) Descriptor() ([]byte, []int) {
 	return file_document_proto_rawDescGZIP(), []int{2}
 }
 
-func (x *SendDocumentResponse) GetDocumentId() string {
+func (x *SendDocumentResponse) GetDocId() string {
 	if x != nil {
-		return x.DocumentId
+		return x.DocId
 	}
 	return ""
+}
+
+func (x *SendDocumentResponse) GetStatus() DocumentStatus {
+	if x != nil {
+		return x.Status
+	}
+	return DocumentStatus_DOC_STATUS_UNSPECIFIED
 }
 
 type GetDocumentByUUIDRequest struct {
@@ -410,40 +422,41 @@ var File_document_proto protoreflect.FileDescriptor
 
 const file_document_proto_rawDesc = "" +
 	"\n" +
-	"\x0edocument.proto\x12\x19go_edi_document_processor\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\"\xef\x02\n" +
+	"\x0edocument.proto\x12\x19go_edi_document_processor\x1a\x1fgoogle/protobuf/timestamp.proto\x1a\x1cgoogle/api/annotations.proto\x1a\x0evalidate.proto\"\x83\x03\n" +
 	"\bDocument\x12\x15\n" +
-	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12;\n" +
-	"\x04type\x18\x02 \x01(\x0e2'.go_edi_document_processor.DocumentTypeR\x04type\x12\x18\n" +
+	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12E\n" +
+	"\x04type\x18\x02 \x01(\x0e2'.go_edi_document_processor.DocumentTypeB\b\xfaB\x05\x82\x01\x02\x10\x01R\x04type\x12\x18\n" +
 	"\acontent\x18\x03 \x01(\fR\acontent\x12\x1b\n" +
-	"\tsender_id\x18\x04 \x01(\tR\bsenderId\x12\x1f\n" +
-	"\vreceiver_id\x18\x05 \x01(\tR\n" +
+	"\tsender_id\x18\x04 \x01(\tR\bsenderId\x12)\n" +
+	"\vreceiver_id\x18\x05 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\n" +
 	"receiverId\x12A\n" +
 	"\x06status\x18\a \x01(\x0e2).go_edi_document_processor.DocumentStatusR\x06status\x129\n" +
 	"\n" +
 	"created_at\x18\t \x01(\v2\x1a.google.protobuf.TimestampR\tcreatedAt\x129\n" +
 	"\n" +
 	"updated_at\x18\n" +
-	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"V\n" +
-	"\x13SendDocumentRequest\x12?\n" +
-	"\bdocument\x18\x01 \x01(\v2#.go_edi_document_processor.DocumentR\bdocument\"7\n" +
-	"\x14SendDocumentResponse\x12\x1f\n" +
-	"\vdocument_id\x18\x01 \x01(\tR\n" +
-	"documentId\".\n" +
-	"\x18GetDocumentByUUIDRequest\x12\x12\n" +
-	"\x04uuid\x18\x01 \x01(\tR\x04uuid\"\\\n" +
+	" \x01(\v2\x1a.google.protobuf.TimestampR\tupdatedAt\"`\n" +
+	"\x13SendDocumentRequest\x12I\n" +
+	"\bdocument\x18\x01 \x01(\v2#.go_edi_document_processor.DocumentB\b\xfaB\x05\x8a\x01\x02\x10\x01R\bdocument\"p\n" +
+	"\x14SendDocumentResponse\x12\x15\n" +
+	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12A\n" +
+	"\x06status\x18\x02 \x01(\x0e2).go_edi_document_processor.DocumentStatusR\x06status\"8\n" +
+	"\x18GetDocumentByUUIDRequest\x12\x1c\n" +
+	"\x04uuid\x18\x01 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\x04uuid\"\\\n" +
 	"\x19GetDocumentByUUIDResponse\x12?\n" +
-	"\bdocument\x18\x01 \x01(\v2#.go_edi_document_processor.DocumentR\bdocument*s\n" +
-	"\fDocumentType\x12\x1d\n" +
-	"\x19DOCUMENT_TYPE_UNSPECIFIED\x10\x00\x12\x15\n" +
-	"\x11DOCUMENT_TYPE_XML\x10\x01\x12\x15\n" +
-	"\x11DOCUMENT_TYPE_PDF\x10\x02\x12\x16\n" +
-	"\x12DOCUMENT_TYPE_JSON\x10\x03*\xa7\x01\n" +
-	"\x0eDocumentStatus\x12\x1f\n" +
-	"\x1bDOCUMENT_STATUS_UNSPECIFIED\x10\x00\x12\x1b\n" +
-	"\x17DOCUMENT_STATUS_PENDING\x10\x01\x12\x1c\n" +
-	"\x18DOCUMENT_STATUS_RECEIVED\x10\x02\x12\x1d\n" +
-	"\x19DOCUMENT_STATUS_PROCESSED\x10\x03\x12\x1a\n" +
-	"\x16DOCUMENT_STATUS_FAILED\x10\x042\xbd\x02\n" +
+	"\bdocument\x18\x01 \x01(\v2#.go_edi_document_processor.DocumentR\bdocument*_\n" +
+	"\fDocumentType\x12\x18\n" +
+	"\x14DOC_TYPE_UNSPECIFIED\x10\x00\x12\x10\n" +
+	"\fDOC_TYPE_XML\x10\x01\x12\x10\n" +
+	"\fDOC_TYPE_PDF\x10\x02\x12\x11\n" +
+	"\rDOC_TYPE_JSON\x10\x03*\xa9\x01\n" +
+	"\x0eDocumentStatus\x12\x1a\n" +
+	"\x16DOC_STATUS_UNSPECIFIED\x10\x00\x12\x16\n" +
+	"\x12DOC_STATUS_PENDING\x10\x01\x12\x17\n" +
+	"\x13DOC_STATUS_RECEIVED\x10\x02\x12\x18\n" +
+	"\x14DOC_STATUS_PROCESSED\x10\x03\x12\x15\n" +
+	"\x11DOC_STATUS_FAILED\x10\x04\x12\x19\n" +
+	"\x15DOC_STATUS_SUCCESSFUL\x10\x052\xbd\x02\n" +
 	"\x0fDocumentService\x12\x8c\x01\n" +
 	"\fSendDocument\x12..go_edi_document_processor.SendDocumentRequest\x1a/.go_edi_document_processor.SendDocumentResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/api/v1/doc/send\x12\x9a\x01\n" +
 	"\x11GetDocumentByUUID\x123.go_edi_document_processor.GetDocumentByUUIDRequest\x1a4.go_edi_document_processor.GetDocumentByUUIDResponse\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/api/v1/doc/{uuid}B6Z4github.com/go-edi-document-processor/api/proto;protob\x06proto3"
@@ -478,16 +491,17 @@ var file_document_proto_depIdxs = []int32{
 	7, // 2: go_edi_document_processor.Document.created_at:type_name -> google.protobuf.Timestamp
 	7, // 3: go_edi_document_processor.Document.updated_at:type_name -> google.protobuf.Timestamp
 	2, // 4: go_edi_document_processor.SendDocumentRequest.document:type_name -> go_edi_document_processor.Document
-	2, // 5: go_edi_document_processor.GetDocumentByUUIDResponse.document:type_name -> go_edi_document_processor.Document
-	3, // 6: go_edi_document_processor.DocumentService.SendDocument:input_type -> go_edi_document_processor.SendDocumentRequest
-	5, // 7: go_edi_document_processor.DocumentService.GetDocumentByUUID:input_type -> go_edi_document_processor.GetDocumentByUUIDRequest
-	4, // 8: go_edi_document_processor.DocumentService.SendDocument:output_type -> go_edi_document_processor.SendDocumentResponse
-	6, // 9: go_edi_document_processor.DocumentService.GetDocumentByUUID:output_type -> go_edi_document_processor.GetDocumentByUUIDResponse
-	8, // [8:10] is the sub-list for method output_type
-	6, // [6:8] is the sub-list for method input_type
-	6, // [6:6] is the sub-list for extension type_name
-	6, // [6:6] is the sub-list for extension extendee
-	0, // [0:6] is the sub-list for field type_name
+	1, // 5: go_edi_document_processor.SendDocumentResponse.status:type_name -> go_edi_document_processor.DocumentStatus
+	2, // 6: go_edi_document_processor.GetDocumentByUUIDResponse.document:type_name -> go_edi_document_processor.Document
+	3, // 7: go_edi_document_processor.DocumentService.SendDocument:input_type -> go_edi_document_processor.SendDocumentRequest
+	5, // 8: go_edi_document_processor.DocumentService.GetDocumentByUUID:input_type -> go_edi_document_processor.GetDocumentByUUIDRequest
+	4, // 9: go_edi_document_processor.DocumentService.SendDocument:output_type -> go_edi_document_processor.SendDocumentResponse
+	6, // 10: go_edi_document_processor.DocumentService.GetDocumentByUUID:output_type -> go_edi_document_processor.GetDocumentByUUIDResponse
+	9, // [9:11] is the sub-list for method output_type
+	7, // [7:9] is the sub-list for method input_type
+	7, // [7:7] is the sub-list for extension type_name
+	7, // [7:7] is the sub-list for extension extendee
+	0, // [0:7] is the sub-list for field type_name
 }
 
 func init() { file_document_proto_init() }

@@ -3,6 +3,7 @@ module github.com/go-edi-document-processor
 go 1.25.0
 
 require (
+	github.com/envoyproxy/protoc-gen-validate v1.3.0
 	github.com/google/uuid v1.6.0
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.28.0
 	github.com/spf13/viper v1.21.0

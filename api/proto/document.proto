@@ -6,43 +6,46 @@ option go_package = "github.com/go-edi-document-processor/api/proto;proto";
 
 import "google/protobuf/timestamp.proto";
 import "google/api/annotations.proto";
+import "validate.proto";
 
 enum DocumentType {
-  DOCUMENT_TYPE_UNSPECIFIED = 0;
-  DOCUMENT_TYPE_XML = 1;
-  DOCUMENT_TYPE_PDF = 2;
-  DOCUMENT_TYPE_JSON = 3;
+  DOC_TYPE_UNSPECIFIED = 0;
+  DOC_TYPE_XML = 1;
+  DOC_TYPE_PDF = 2;
+  DOC_TYPE_JSON = 3;
 }
 
 enum DocumentStatus {
-  DOCUMENT_STATUS_UNSPECIFIED = 0;
-  DOCUMENT_STATUS_PENDING = 1;
-  DOCUMENT_STATUS_RECEIVED = 2;
-  DOCUMENT_STATUS_PROCESSED = 3;
-  DOCUMENT_STATUS_FAILED = 4;
+  DOC_STATUS_UNSPECIFIED = 0;
+  DOC_STATUS_PENDING = 1;
+  DOC_STATUS_RECEIVED = 2;
+  DOC_STATUS_PROCESSED = 3;
+  DOC_STATUS_FAILED = 4;
+  DOC_STATUS_SUCCESSFUL = 5;
 }
 
 message Document {
   string doc_id = 1;
-  DocumentType type = 2;
+  DocumentType type = 2 [(validate.rules).enum = {defined_only: true}];
   bytes content = 3;
   string sender_id = 4;
-  string receiver_id = 5;
+  string receiver_id = 5 [(validate.rules).string = {uuid: true}];
   DocumentStatus status = 7;
   google.protobuf.Timestamp created_at = 9;
   google.protobuf.Timestamp updated_at = 10;
 }
 
 message SendDocumentRequest {
-  Document document = 1;
+  Document document = 1 [(validate.rules).message = {required: true}];
 }
 
 message SendDocumentResponse {
-  string document_id = 1;
+  string doc_id = 1;
+  DocumentStatus status = 2;
 }
 
 message GetDocumentByUUIDRequest {
-  string uuid = 1;
+  string uuid = 1 [(validate.rules).string = {uuid: true}];
 }
 
 message GetDocumentByUUIDResponse {

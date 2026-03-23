@@ -3,7 +3,7 @@ package ports
 import (
 	"context"
 
-	"github.com/go-edi-document-processor/internal/domain"
+	"github.com/go-edi-document-processor/internal/core/domain"
 )
 
 type DocumentService interface {

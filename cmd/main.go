@@ -9,11 +9,11 @@ import (
 	"syscall"
 	"time"
 
+	g "github.com/go-edi-document-processor/internal/adapters/primary/grpc_controllers"
+	h "github.com/go-edi-document-processor/internal/adapters/primary/http_controllers"
 	"github.com/go-edi-document-processor/internal/bootstrap/config"
 	"github.com/go-edi-document-processor/internal/bootstrap/logger"
 	"github.com/go-edi-document-processor/internal/bootstrap/tracing"
-	g "github.com/go-edi-document-processor/internal/controllers/grpc_controllers"
-	h "github.com/go-edi-document-processor/internal/controllers/http_controllers"
 	"go.uber.org/zap"
 )
 
