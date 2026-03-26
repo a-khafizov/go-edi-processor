@@ -2,7 +2,7 @@
 
 PROTO_FILE = api/proto/document.proto
 PROTO_PATHS = --proto_path=api/proto/ --proto_path=$(GOPATH)/pkg/mod/googleapis
-OUTPUT_DIR = api/proto
+OUTPUT_DIR = api/proto/gen
 OUTPUT_DIR_SWAGGER = docs
 GO_OPTS = --go_opt=paths=source_relative
 GRPC_OPTS = --go-grpc_opt=paths=source_relative

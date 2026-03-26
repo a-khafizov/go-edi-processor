@@ -504,9 +504,9 @@ func (m *GetDocumentByUUIDRequest) validate(all bool) error {
 
 	var errors []error
 
-	if err := m._validateUuid(m.GetUuid()); err != nil {
+	if err := m._validateUuid(m.GetDocId()); err != nil {
 		err = GetDocumentByUUIDRequestValidationError{
-			field:  "Uuid",
+			field:  "DocId",
 			reason: "value must be a valid UUID",
 			cause:  err,
 		}

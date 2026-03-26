@@ -332,7 +332,7 @@ func (x *SendDocumentResponse) GetStatus() DocumentStatus {
 
 type GetDocumentByUUIDRequest struct {
 	state         protoimpl.MessageState `protogen:"open.v1"`
-	Uuid          string                 `protobuf:"bytes,1,opt,name=uuid,proto3" json:"uuid,omitempty"`
+	DocId         string                 `protobuf:"bytes,1,opt,name=doc_id,json=docId,proto3" json:"doc_id,omitempty"`
 	unknownFields protoimpl.UnknownFields
 	sizeCache     protoimpl.SizeCache
 }
@@ -367,9 +367,9 @@ func (*GetDocumentByUUIDRequest) Descriptor() ([]byte, []int) {
 	return file_document_proto_rawDescGZIP(), []int{3}
 }
 
-func (x *GetDocumentByUUIDRequest) GetUuid() string {
+func (x *GetDocumentByUUIDRequest) GetDocId() string {
 	if x != nil {
-		return x.Uuid
+		return x.DocId
 	}
 	return ""
 }
@@ -520,9 +520,9 @@ const file_document_proto_rawDesc = "" +
 	"\bdocument\x18\x01 \x01(\v2#.go_edi_document_processor.DocumentB\b\xfaB\x05\x8a\x01\x02\x10\x01R\bdocument\"p\n" +
 	"\x14SendDocumentResponse\x12\x15\n" +
 	"\x06doc_id\x18\x01 \x01(\tR\x05docId\x12A\n" +
-	"\x06status\x18\x02 \x01(\x0e2).go_edi_document_processor.DocumentStatusR\x06status\"8\n" +
-	"\x18GetDocumentByUUIDRequest\x12\x1c\n" +
-	"\x04uuid\x18\x01 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\x04uuid\"\\\n" +
+	"\x06status\x18\x02 \x01(\x0e2).go_edi_document_processor.DocumentStatusR\x06status\";\n" +
+	"\x18GetDocumentByUUIDRequest\x12\x1f\n" +
+	"\x06doc_id\x18\x01 \x01(\tB\b\xfaB\x05r\x03\xb0\x01\x01R\x05docId\"\\\n" +
 	"\x19GetDocumentByUUIDResponse\x12?\n" +
 	"\bdocument\x18\x01 \x01(\v2#.go_edi_document_processor.DocumentR\bdocument\"\x18\n" +
 	"\x16ReceiveDocumentRequest\"Z\n" +
@@ -539,10 +539,10 @@ const file_document_proto_rawDesc = "" +
 	"\x13DOC_STATUS_RECEIVED\x10\x02\x12\x18\n" +
 	"\x14DOC_STATUS_PROCESSED\x10\x03\x12\x15\n" +
 	"\x11DOC_STATUS_FAILED\x10\x04\x12\x19\n" +
-	"\x15DOC_STATUS_SUCCESSFUL\x10\x052\xd5\x03\n" +
+	"\x15DOC_STATUS_SUCCESSFUL\x10\x052\xdb\x03\n" +
 	"\x0fDocumentService\x12\x8c\x01\n" +
-	"\fSendDocument\x12..go_edi_document_processor.SendDocumentRequest\x1a/.go_edi_document_processor.SendDocumentResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/api/v1/doc/send\x12\x9a\x01\n" +
-	"\x11GetDocumentByUUID\x123.go_edi_document_processor.GetDocumentByUUIDRequest\x1a4.go_edi_document_processor.GetDocumentByUUIDResponse\"\x1a\x82\xd3\xe4\x93\x02\x14\x12\x12/api/v1/doc/{uuid}\x12\x95\x01\n" +
+	"\fSendDocument\x12..go_edi_document_processor.SendDocumentRequest\x1a/.go_edi_document_processor.SendDocumentResponse\"\x1b\x82\xd3\xe4\x93\x02\x15:\x01*\"\x10/api/v1/doc/send\x12\xa0\x01\n" +
+	"\x11GetDocumentByUUID\x123.go_edi_document_processor.GetDocumentByUUIDRequest\x1a4.go_edi_document_processor.GetDocumentByUUIDResponse\" \x82\xd3\xe4\x93\x02\x1a\x12\x18/api/v1/doc/get/{doc_id}\x12\x95\x01\n" +
 	"\x0fReceiveDocument\x121.go_edi_document_processor.ReceiveDocumentRequest\x1a2.go_edi_document_processor.ReceiveDocumentResponse\"\x1b\x82\xd3\xe4\x93\x02\x15\x12\x13/api/v1/doc/receiveB6Z4github.com/go-edi-document-processor/api/proto;protob\x06proto3"
 
 var (

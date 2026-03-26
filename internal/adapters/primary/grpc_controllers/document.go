@@ -4,10 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/go-edi-document-processor/api/proto"
+	proto "github.com/go-edi-document-processor/api/proto/gen"
 	"github.com/go-edi-document-processor/internal/core/domain"
 	ports "github.com/go-edi-document-processor/internal/core/ports/primary"
-	"github.com/google/uuid"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
 	"google.golang.org/protobuf/types/known/timestamppb"
@@ -47,16 +46,17 @@ func (s *ProtoDocumentServiceServer) GetDocumentByUUID(ctx context.Context, req 
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	doc := &proto.Document{
-		DocId:      uuid.New().String(),
-		Type:       proto.DocumentType_DOC_TYPE_XML,
-		Content:    []byte("<xml>sample</xml>"),
-		SenderId:   "sender-1",
-		ReceiverId: "receiver-1",
-		Status:     proto.DocumentStatus_DOC_STATUS_PENDING,
+	domainDoc, err := s.documentService.GetDocumentByUUID(ctx, req.DocId)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
+	if domainDoc == nil {
+		return nil, status.Error(codes.NotFound, "document not found")
+	}
+
+	protoDoc := domainToProtoDocument(domainDoc)
 	return &proto.GetDocumentByUUIDResponse{
-		Document: doc,
+		Document: protoDoc,
 	}, nil
 }
 
@@ -65,16 +65,17 @@ func (s *ProtoDocumentServiceServer) ReceiveDocument(ctx context.Context, req *p
 		return nil, status.Error(codes.InvalidArgument, err.Error())
 	}
 
-	doc := &proto.Document{
-		DocId:      uuid.New().String(),
-		Type:       proto.DocumentType_DOC_TYPE_XML,
-		Content:    []byte("<xml>sample</xml>"),
-		SenderId:   "sender-1",
-		ReceiverId: "receiver-1",
-		Status:     proto.DocumentStatus_DOC_STATUS_PENDING,
+	domainDoc, err := s.documentService.ReceiveDocument(ctx)
+	if err != nil {
+		return nil, status.Error(codes.Internal, err.Error())
 	}
+	if domainDoc == nil {
+		return nil, status.Error(codes.NotFound, "no document available for receiving")
+	}
+
+	protoDoc := domainToProtoDocument(domainDoc)
 	return &proto.ReceiveDocumentResponse{
-		Document: doc,
+		Document: protoDoc,
 	}, nil
 }
 
@@ -88,6 +89,19 @@ func protoDocumentTypeToDomain(pt proto.DocumentType) domain.DocumentType {
 		return domain.JSON
 	default:
 		return ""
+	}
+}
+
+func domainDocumentTypeToProto(dt domain.DocumentType) proto.DocumentType {
+	switch dt {
+	case domain.XML:
+		return proto.DocumentType_DOC_TYPE_XML
+	case domain.PDF:
+		return proto.DocumentType_DOC_TYPE_PDF
+	case domain.JSON:
+		return proto.DocumentType_DOC_TYPE_JSON
+	default:
+		return proto.DocumentType_DOC_TYPE_UNSPECIFIED
 	}
 }
 
@@ -115,6 +129,13 @@ func timestampToTime(ts *timestamppb.Timestamp) time.Time {
 	return ts.AsTime()
 }
 
+func timeToTimestamp(t time.Time) *timestamppb.Timestamp {
+	if t.IsZero() {
+		return nil
+	}
+	return timestamppb.New(t)
+}
+
 func protoToDomainDocument(pdoc *proto.Document) *domain.Document {
 	if pdoc == nil {
 		return nil
@@ -129,6 +150,23 @@ func protoToDomainDocument(pdoc *proto.Document) *domain.Document {
 		Status:     protoDocumentStatusToDomain(pdoc.Status),
 		CreatedAt:  timestampToTime(pdoc.CreatedAt),
 		UpdatedAt:  timestampToTime(pdoc.UpdatedAt),
+	}
+}
+
+func domainToProtoDocument(doc *domain.Document) *proto.Document {
+	if doc == nil {
+		return nil
+	}
+
+	return &proto.Document{
+		DocId:      doc.DocId,
+		Type:       domainDocumentTypeToProto(doc.Type),
+		Content:    doc.Content,
+		SenderId:   doc.SenderID,
+		ReceiverId: doc.ReceiverID,
+		Status:     domainDocumentStatusToProto(doc.Status),
+		CreatedAt:  timeToTimestamp(doc.CreatedAt),
+		UpdatedAt:  timeToTimestamp(doc.UpdatedAt),
 	}
 }
 

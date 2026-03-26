@@ -40,10 +40,26 @@ func (s *DocumentService) SendDocument(ctx context.Context, document *domain.Doc
 	return savedDoc, nil
 }
 
-func (s *DocumentService) GetDocumentByUUID(ctx context.Context, id string) (*domain.Document, error) {
-	return s.documentRepository.Get(ctx, id)
+func (s *DocumentService) GetDocumentByUUID(ctx context.Context, docId string) (*domain.Document, error) {
+	return s.documentRepository.Get(ctx, docId)
 }
 
 func (s *DocumentService) ReceiveDocument(ctx context.Context) (*domain.Document, error) {
-	return nil, nil
+	doc, err := s.documentRepository.GetOldest(ctx)
+	if err != nil {
+		return nil, err
+	}
+	if doc == nil {
+		return nil, nil
+	}
+
+	doc.Status = domain.Successful
+	doc.UpdatedAt = time.Now()
+
+	err = s.outboxService.SaveDocumentWithEvent(ctx, doc, "document.status.updated")
+	if err != nil {
+		return nil, err
+	}
+
+	return doc, nil
 }

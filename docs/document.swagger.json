@@ -16,6 +16,36 @@
     "application/json"
   ],
   "paths": {
+    "/api/v1/doc/get/{docId}": {
+      "get": {
+        "operationId": "DocumentService_GetDocumentByUUID",
+        "responses": {
+          "200": {
+            "description": "A successful response.",
+            "schema": {
+              "$ref": "#/definitions/go_edi_document_processorGetDocumentByUUIDResponse"
+            }
+          },
+          "default": {
+            "description": "An unexpected error response.",
+            "schema": {
+              "$ref": "#/definitions/rpcStatus"
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "docId",
+            "in": "path",
+            "required": true,
+            "type": "string"
+          }
+        ],
+        "tags": [
+          "DocumentService"
+        ]
+      }
+    },
     "/api/v1/doc/receive": {
       "get": {
         "operationId": "DocumentService_ReceiveDocument",
@@ -63,36 +93,6 @@
             "schema": {
               "$ref": "#/definitions/go_edi_document_processorSendDocumentRequest"
             }
-          }
-        ],
-        "tags": [
-          "DocumentService"
-        ]
-      }
-    },
-    "/api/v1/doc/{uuid}": {
-      "get": {
-        "operationId": "DocumentService_GetDocumentByUUID",
-        "responses": {
-          "200": {
-            "description": "A successful response.",
-            "schema": {
-              "$ref": "#/definitions/go_edi_document_processorGetDocumentByUUIDResponse"
-            }
-          },
-          "default": {
-            "description": "An unexpected error response.",
-            "schema": {
-              "$ref": "#/definitions/rpcStatus"
-            }
-          }
-        },
-        "parameters": [
-          {
-            "name": "uuid",
-            "in": "path",
-            "required": true,
-            "type": "string"
           }
         ],
         "tags": [

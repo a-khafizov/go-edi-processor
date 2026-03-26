@@ -45,7 +45,7 @@ message SendDocumentResponse {
 }
 
 message GetDocumentByUUIDRequest {
-  string uuid = 1 [(validate.rules).string = {uuid: true}];
+  string doc_id = 1 [(validate.rules).string = {uuid: true}];
 }
 
 message GetDocumentByUUIDResponse {
@@ -68,7 +68,7 @@ service DocumentService {
   }
   rpc GetDocumentByUUID(GetDocumentByUUIDRequest) returns (GetDocumentByUUIDResponse) {
     option (google.api.http) = {
-      get: "/api/v1/doc/{uuid}"
+      get: "/api/v1/doc/get/{doc_id}"
     };
   }
   rpc ReceiveDocument(ReceiveDocumentRequest) returns (ReceiveDocumentResponse) {

@@ -3,7 +3,7 @@ package deps
 import (
 	"net"
 
-	"github.com/go-edi-document-processor/api/proto"
+	proto "github.com/go-edi-document-processor/api/proto/gen"
 	"go.opentelemetry.io/otel/trace"
 	"go.uber.org/zap"
 

@@ -5,7 +5,7 @@
 LOGGING.md
 .vscode
 vendor
-./docs/tracing.md
+docs/tracing.md
 # Binaries for programs and plugins
 *.exe
 *.exe~
