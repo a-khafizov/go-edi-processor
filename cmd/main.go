@@ -15,6 +15,7 @@ import (
 	adapters "github.com/go-edi-document-processor/internal/adapters/secondary"
 	"github.com/go-edi-document-processor/internal/core/services"
 	"github.com/go-edi-document-processor/internal/deps"
+	"github.com/oagudo/outbox"
 	"go.uber.org/zap"
 )
 
@@ -26,32 +27,62 @@ func main() {
 		log.Fatal("Failed to load configuration:", err)
 	}
 
-	log := deps.NewLogger(cfg.LogLevel)
-	defer log.Sync()
+	logger := deps.NewLogger(cfg.LogLevel)
+	defer logger.Sync()
 
 	serviceName := "go-edi-document-processor"
 	if err := deps.InitTracerProvider(serviceName); err != nil {
-		log.Error("Failed to initialize tracing",
+		logger.Error("Failed to initialize tracing",
 			zap.Error(err),
 		)
 		os.Exit(1)
 	}
 	defer deps.Shutdown(context.Background())
 
+	db, err := deps.InitDB(cfg)
+	if err != nil {
+		logger.Fatal("Failed to connect to database", zap.Error(err))
+	}
+	defer db.Close()
+
 	startTime := time.Now()
 
-	docRepository := adapters.NewDocumentRepository()
-	// outboxRepository := adapters.NewOutboxRepository()
+	docRepository := adapters.NewDocumentRepository(db)
 
-	docService := services.NewDocumentService(docRepository)
-	// outboxService := services.NewOutboxService(outboxRepository)
+	outboxService, err := adapters.NewOutboxService(db, docRepository)
+	if err != nil {
+		logger.Fatal("Failed to create outbox service", zap.Error(err))
+	}
+
+	// Создаём Kafka publisher для отправки сообщений
+	kafkaPublisher, err := adapters.NewKafkaPublisher(cfg)
+	if err != nil {
+		logger.Fatal("Failed to create Kafka publisher", zap.Error(err))
+	}
+	defer kafkaPublisher.Close()
+
+	// Создаём DBContext для reader
+	dbCtx := outbox.NewDBContext(db, outbox.SQLDialectPostgres)
+
+	// Создаём и запускаем outbox reader
+	outboxReader := adapters.NewOutboxReader(dbCtx, kafkaPublisher, logger)
+	outboxReader.Start()
+	defer func() {
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if err := outboxReader.Stop(ctx); err != nil {
+			logger.Error("Failed to stop outbox reader", zap.Error(err))
+		}
+	}()
+
+	docService := services.NewDocumentService(docRepository, outboxService)
 
 	protoDocumentServiceServer := adapters_grpc.NewProtoDocumentServiceServer(docService)
 
 	gatewayCtx := context.Background()
 	httpController, err := adapters_http.NewHttpControllers(gatewayCtx, "localhost:"+cfg.GRPCPort)
 	if err != nil {
-		log.Error("Failed to create gateway handler",
+		logger.Error("Failed to create gateway handler",
 			zap.Error(err),
 		)
 		os.Exit(1)
@@ -63,29 +94,29 @@ func main() {
 	}
 
 	tracer := deps.GetTracer("grpc")
-	grpcServer := deps.NewGrpcServer(log, cfg.GRPCPort, tracer, protoDocumentServiceServer)
+	grpcServer := deps.NewGrpcServer(logger, cfg.GRPCPort, tracer, protoDocumentServiceServer)
 
 	go func() {
-		log.Info("Starting HTTP server",
+		logger.Info("Starting HTTP server",
 			zap.String("port", cfg.HTTPPort),
 		)
 
 		err := httpServer.ListenAndServe()
 		if err != nil && err != http.ErrServerClosed {
-			log.Error("HTTP server failed",
+			logger.Error("HTTP server failed",
 				zap.Error(err),
 			)
 		}
 	}()
 
 	go func() {
-		log.Info("Starting gRPC server",
+		logger.Info("Starting gRPC server",
 			zap.String("port", cfg.GRPCPort),
 		)
 
 		err := grpcServer.Start()
 		if err != nil {
-			log.Error("gRPC server failed",
+			logger.Error("gRPC server failed",
 				zap.Error(err),
 			)
 		}
@@ -95,7 +126,7 @@ func main() {
 	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
 	<-quit
 
-	log.Info("Shutting down servers...",
+	logger.Info("Shutting down servers...",
 		zap.Duration("uptime", time.Since(startTime)),
 	)
 
@@ -103,13 +134,13 @@ func main() {
 	defer cancel()
 
 	if err := httpServer.Shutdown(ctx); err != nil {
-		log.Error("HTTP server shutdown failed",
+		logger.Error("HTTP server shutdown failed",
 			zap.Error(err),
 		)
 	}
 	grpcServer.Stop()
 
-	log.Info("Servers stopped gracefully",
+	logger.Info("Servers stopped gracefully",
 		zap.Duration("total_uptime", time.Since(startTime)),
 	)
 }

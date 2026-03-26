@@ -123,7 +123,7 @@ func protoToDomainDocument(pdoc *proto.Document) *domain.Document {
 	return &domain.Document{
 		DocId:      pdoc.DocId,
 		Type:       protoDocumentTypeToDomain(pdoc.Type),
-		Content:    pdoc.Content, // bytes → []byte (совместимы)
+		Content:    pdoc.Content,
 		SenderID:   pdoc.SenderId,
 		ReceiverID: pdoc.ReceiverId,
 		Status:     protoDocumentStatusToDomain(pdoc.Status),

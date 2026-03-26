@@ -24,9 +24,9 @@ const (
 type DocumentStatus string
 
 const (
-	Pending    DocumentStatus = "PENDING"
-	Received   DocumentStatus = "RECEIVED"
-	Processed  DocumentStatus = "PROCESSED"
-	Failed     DocumentStatus = "FAILED"
-	Successful DocumentStatus = "SUCCESSFUL"
+	Pending    DocumentStatus = "DOC_STATUS_PENDING"
+	Received   DocumentStatus = "DOC_STATUS_RECEIVED"
+	Processed  DocumentStatus = "DOC_STATUS_PROCESSED"
+	Failed     DocumentStatus = "DOC_STATUS_FAILED"
+	Successful DocumentStatus = "DOC_STATUS_SUCCESSFUL"
 )

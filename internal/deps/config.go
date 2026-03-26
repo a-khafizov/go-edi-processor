@@ -20,9 +20,13 @@ type Config struct {
 	RedisPassword string
 	RedisDB       int
 
-	KafkaBrokers       string
-	KafkaTopicDocument string
-	KafkaGroupID       string
+	KafkaBrokers          string
+	KafkaTopic            string
+	KafkaGroupID          string
+	KafkaUsername         string
+	KafkaPassword         string
+	KafkaSASLMechanism    string
+	KafkaSecurityProtocol string
 
 	HTTPPort string
 	GRPCPort string
@@ -39,7 +43,6 @@ func Load() (*Config, error) {
 	v.SetConfigType("env")
 	v.AutomaticEnv()
 
-	// Try to read config file, ignore if not found
 	if err := v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			log.Printf("Config file .env not found, using environment variables")
@@ -61,9 +64,13 @@ func Load() (*Config, error) {
 		RedisPassword: v.GetString("REDIS_PASSWORD"),
 		RedisDB:       v.GetInt("REDIS_DB"),
 
-		KafkaBrokers:       v.GetString("KAFKA_BROKERS"),
-		KafkaTopicDocument: v.GetString("KAFKA_TOPIC_DOCUMENT"),
-		KafkaGroupID:       v.GetString("KAFKA_GROUP_ID"),
+		KafkaBrokers:          v.GetString("KAFKA_BROKERS"),
+		KafkaTopic:            v.GetString("KAFKA_TOPIC"),
+		KafkaGroupID:          v.GetString("KAFKA_GROUP_ID"),
+		KafkaUsername:         v.GetString("KAFKA_SASL_USERNAME"),
+		KafkaPassword:         v.GetString("KAFKA_SASL_PASSWORD"),
+		KafkaSASLMechanism:    v.GetString("KAFKA_SASL_MECHANISM"),
+		KafkaSecurityProtocol: v.GetString("KAFKA_SECURITY_PROTOCOL"),
 
 		HTTPPort: v.GetString("HTTP_PORT"),
 		GRPCPort: v.GetString("GRPC_PORT"),
