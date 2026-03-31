@@ -27,7 +27,7 @@ func main() {
 		log.Fatal("Failed to load configuration:", err)
 	}
 
-	logger := deps.NewLogger(cfg.LogLevel)
+	logger := deps.InitLogger(cfg.LogLevel)
 	defer logger.Sync()
 
 	serviceName := "go-edi-document-processor"
@@ -74,6 +74,18 @@ func main() {
 			logger.Error("Failed to stop outbox reader", zap.Error(err))
 		}
 	}()
+
+	// Создаём Kafka consumer для чтения сообщений
+	kafkaConsumer, err := adapters.NewKafkaConsumer(cfg, logger)
+	if err != nil {
+		logger.Fatal("Failed to create Kafka consumer", zap.Error(err))
+	}
+	defer kafkaConsumer.Close()
+
+	// Запускаем consumer в фоне
+	consumerCtx, consumerCancel := context.WithCancel(context.Background())
+	defer consumerCancel()
+	go kafkaConsumer.Start(consumerCtx)
 
 	docService := services.NewDocumentService(docRepository, outboxService)
 

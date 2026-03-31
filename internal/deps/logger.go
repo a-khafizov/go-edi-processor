@@ -9,7 +9,7 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-func NewLogger(loglevel string) *zap.Logger {
+func InitLogger(loglevel string) *zap.Logger {
 	var level zap.AtomicLevel
 
 	switch strings.ToUpper(loglevel) {
