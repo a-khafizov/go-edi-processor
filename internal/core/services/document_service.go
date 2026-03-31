@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/go-edi-document-processor/internal/core/domain"
@@ -12,12 +13,14 @@ import (
 type DocumentService struct {
 	documentRepository ports.DocumentRepository
 	outboxService      ports.OutboxService
+	cacheRepository    ports.CacheRepository
 }
 
-func NewDocumentService(documentRepository ports.DocumentRepository, outboxService ports.OutboxService) *DocumentService {
+func NewDocumentService(documentRepository ports.DocumentRepository, outboxService ports.OutboxService, cacheRepository ports.CacheRepository) *DocumentService {
 	return &DocumentService{
 		documentRepository: documentRepository,
 		outboxService:      outboxService,
+		cacheRepository:    cacheRepository,
 	}
 }
 
@@ -32,6 +35,10 @@ func (s *DocumentService) SendDocument(ctx context.Context, document *domain.Doc
 		return nil, err
 	}
 
+	if err := s.cacheRepository.Set(ctx, document.DocId, document, 5*time.Minute); err != nil {
+		fmt.Printf("Warning: failed to cache document %s: %v\n", document.DocId, err)
+	}
+
 	savedDoc := &domain.Document{
 		DocId:  document.DocId,
 		Status: document.Status,
@@ -41,7 +48,27 @@ func (s *DocumentService) SendDocument(ctx context.Context, document *domain.Doc
 }
 
 func (s *DocumentService) GetDocumentByUUID(ctx context.Context, docId string) (*domain.Document, error) {
-	return s.documentRepository.Get(ctx, docId)
+	cachedDoc, err := s.cacheRepository.Get(ctx, docId)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get from cache: %w", err)
+	}
+	if cachedDoc != nil {
+		return cachedDoc, nil
+	}
+
+	doc, err := s.documentRepository.Get(ctx, docId)
+	if err != nil {
+		return nil, err
+	}
+	if doc == nil {
+		return nil, nil
+	}
+
+	if err := s.cacheRepository.Set(ctx, docId, doc, 5*time.Minute); err != nil {
+		fmt.Printf("Warning: failed to cache document %s: %v\n", docId, err)
+	}
+
+	return doc, nil
 }
 
 func (s *DocumentService) ReceiveDocument(ctx context.Context) (*domain.Document, error) {
@@ -59,6 +86,10 @@ func (s *DocumentService) ReceiveDocument(ctx context.Context) (*domain.Document
 	err = s.outboxService.SaveDocumentWithEvent(ctx, doc, "document.status.updated")
 	if err != nil {
 		return nil, err
+	}
+
+	if err := s.cacheRepository.Delete(ctx, doc.DocId); err != nil {
+		fmt.Printf("Warning: failed to invalidate cache for document %s: %v\n", doc.DocId, err)
 	}
 
 	return doc, nil

@@ -45,26 +45,31 @@ func main() {
 	}
 	defer db.Close()
 
+	redisClient, err := deps.InitRedis(cfg)
+	if err != nil {
+		logger.Fatal("Failed to connect to Redis", zap.Error(err))
+	}
+	defer redisClient.Close()
+
 	startTime := time.Now()
 
 	docRepository := adapters.NewDocumentRepository(db)
+
+	cacheRepository := adapters.NewRedisCache(redisClient)
 
 	outboxService, err := adapters.NewOutboxService(db, docRepository)
 	if err != nil {
 		logger.Fatal("Failed to create outbox service", zap.Error(err))
 	}
 
-	// Создаём Kafka publisher для отправки сообщений
 	kafkaPublisher, err := adapters.NewKafkaPublisher(cfg)
 	if err != nil {
 		logger.Fatal("Failed to create Kafka publisher", zap.Error(err))
 	}
 	defer kafkaPublisher.Close()
 
-	// Создаём DBContext для reader
 	dbCtx := outbox.NewDBContext(db, outbox.SQLDialectPostgres)
 
-	// Создаём и запускаем outbox reader
 	outboxReader := adapters.NewOutboxReader(dbCtx, kafkaPublisher, logger)
 	outboxReader.Start()
 	defer func() {
@@ -75,19 +80,17 @@ func main() {
 		}
 	}()
 
-	// Создаём Kafka consumer для чтения сообщений
 	kafkaConsumer, err := adapters.NewKafkaConsumer(cfg, logger)
 	if err != nil {
 		logger.Fatal("Failed to create Kafka consumer", zap.Error(err))
 	}
 	defer kafkaConsumer.Close()
 
-	// Запускаем consumer в фоне
 	consumerCtx, consumerCancel := context.WithCancel(context.Background())
 	defer consumerCancel()
 	go kafkaConsumer.Start(consumerCtx)
 
-	docService := services.NewDocumentService(docRepository, outboxService)
+	docService := services.NewDocumentService(docRepository, outboxService, cacheRepository)
 
 	protoDocumentServiceServer := adapters_grpc.NewProtoDocumentServiceServer(docService)
 
