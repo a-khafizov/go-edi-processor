@@ -27,6 +27,10 @@ type Config struct {
 	KafkaPassword         string
 	KafkaSASLMechanism    string
 	KafkaSecurityProtocol string
+	KafkaTLSCAFile        string
+	KafkaTLSClientCert    string
+	KafkaTLSClientKey     string
+	KafkaTLSInsecureSkip  bool
 
 	HTTPPort string
 	GRPCPort string
@@ -79,6 +83,10 @@ func Load() (*Config, error) {
 		KafkaPassword:         v.GetString("KAFKA_SASL_PASSWORD"),
 		KafkaSASLMechanism:    v.GetString("KAFKA_SASL_MECHANISM"),
 		KafkaSecurityProtocol: v.GetString("KAFKA_SECURITY_PROTOCOL"),
+		KafkaTLSCAFile:        v.GetString("KAFKA_TLS_CA_FILE"),
+		KafkaTLSClientCert:    v.GetString("KAFKA_TLS_CLIENT_CERT"),
+		KafkaTLSClientKey:     v.GetString("KAFKA_TLS_CLIENT_KEY"),
+		KafkaTLSInsecureSkip:  v.GetBool("KAFKA_TLS_INSECURE_SKIP"),
 
 		HTTPPort: v.GetString("HTTP_PORT"),
 		GRPCPort: v.GetString("GRPC_PORT"),

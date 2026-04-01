@@ -4,12 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-edi-document-processor/internal/deps"
 	"github.com/twmb/franz-go/pkg/kgo"
-	"github.com/twmb/franz-go/pkg/sasl/plain"
 	"go.uber.org/zap"
 )
 
@@ -27,29 +25,15 @@ func NewKafkaConsumer(cfg *deps.Config, logger *zap.Logger) (*KafkaConsumer, err
 		return nil, fmt.Errorf("Kafka group ID is not configured")
 	}
 
-	brokers := strings.Split(cfg.KafkaBrokers, ",")
-	if len(brokers) == 0 {
-		return nil, fmt.Errorf("no Kafka brokers configured")
-	}
-
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(brokers...),
+	consumerOpts := []kgo.Opt{
 		kgo.ConsumeTopics(cfg.KafkaTopic),
 		kgo.ConsumerGroup(cfg.KafkaGroupID),
 		kgo.AutoCommitInterval(5 * time.Second),
 	}
 
-	securityProtocol := strings.ToUpper(cfg.KafkaSecurityProtocol)
-	if securityProtocol == "SASL_PLAINTEXT" || securityProtocol == "PLAINTEXT" {
-		opts = append(opts, kgo.DialTLSConfig(nil))
-	}
-
-	if cfg.KafkaUsername != "" && cfg.KafkaPassword != "" {
-		mechanism := plain.Auth{
-			User: cfg.KafkaUsername,
-			Pass: cfg.KafkaPassword,
-		}.AsMechanism()
-		opts = append(opts, kgo.SASL(mechanism))
+	opts, err := deps.KafkaClientOptions(cfg, consumerOpts...)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kafka client options: %w", err)
 	}
 
 	client, err := kgo.NewClient(opts...)

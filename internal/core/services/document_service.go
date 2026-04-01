@@ -47,8 +47,6 @@ func (s *DocumentService) SendDocument(ctx context.Context, document *domain.Doc
 			defer cancel()
 			if err := s.mongoRepository.Insert(mongoCtx, document); err != nil {
 				fmt.Printf("Warning: failed to save document %s to MongoDB: %v\n", document.DocId, err)
-			} else {
-				fmt.Printf("Document %s saved to MongoDB\n", document.DocId)
 			}
 		}()
 	}

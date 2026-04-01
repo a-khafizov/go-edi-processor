@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/go-edi-document-processor/internal/deps"
 	"github.com/oagudo/outbox"
 	"github.com/twmb/franz-go/pkg/kgo"
 	"github.com/twmb/franz-go/pkg/kmsg"
-	"github.com/twmb/franz-go/pkg/sasl/plain"
 )
 
 type KafkaPublisher struct {
@@ -24,26 +22,9 @@ func NewKafkaPublisher(cfg *deps.Config) (*KafkaPublisher, error) {
 		return nil, fmt.Errorf("Kafka topic is not configured")
 	}
 
-	brokers := strings.Split(cfg.KafkaBrokers, ",")
-	if len(brokers) == 0 {
-		return nil, fmt.Errorf("no Kafka brokers configured")
-	}
-
-	opts := []kgo.Opt{
-		kgo.SeedBrokers(brokers...),
-	}
-
-	securityProtocol := strings.ToUpper(cfg.KafkaSecurityProtocol)
-	if securityProtocol == "SASL_PLAINTEXT" || securityProtocol == "PLAINTEXT" {
-		opts = append(opts, kgo.DialTLSConfig(nil))
-	}
-
-	if cfg.KafkaUsername != "" && cfg.KafkaPassword != "" {
-		mechanism := plain.Auth{
-			User: cfg.KafkaUsername,
-			Pass: cfg.KafkaPassword,
-		}.AsMechanism()
-		opts = append(opts, kgo.SASL(mechanism))
+	opts, err := deps.KafkaClientOptions(cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create Kafka client options: %w", err)
 	}
 
 	client, err := kgo.NewClient(opts...)
