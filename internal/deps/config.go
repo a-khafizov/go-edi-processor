@@ -35,6 +35,14 @@ type Config struct {
 	PrometheusEnabled bool
 	LokiEnabled       bool
 	LokiURL           string
+
+	MongoDBEnabled      bool
+	MongoDBHost         string
+	MongoDBPort         string
+	MongoDBRootUser     string
+	MongoDBRootPassword string
+	MongoDBDatabase     string
+	MongoDBAuthSource   string
 }
 
 func Load() (*Config, error) {
@@ -79,5 +87,13 @@ func Load() (*Config, error) {
 		PrometheusEnabled: v.GetBool("PROMETHEUS_ENABLED"),
 		LokiEnabled:       v.GetBool("LOKI_ENABLED"),
 		LokiURL:           v.GetString("LOKI_URL"),
+
+		MongoDBEnabled:      v.GetBool("MONGODB_ENABLED"),
+		MongoDBHost:         v.GetString("MONGODB_HOST"),
+		MongoDBPort:         v.GetString("MONGODB_PORT"),
+		MongoDBRootUser:     v.GetString("MONGODB_ROOT_USER"),
+		MongoDBRootPassword: v.GetString("MONGODB_ROOT_PASSWORD"),
+		MongoDBDatabase:     v.GetString("MONGODB_DATABASE"),
+		MongoDBAuthSource:   v.GetString("MONGODB_AUTH_SOURCE"),
 	}, nil
 }

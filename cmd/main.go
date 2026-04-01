@@ -51,7 +51,34 @@ func main() {
 	}
 	defer redisClient.Close()
 
+	mongoClient, err := deps.InitMongoDB(cfg)
+	if err != nil {
+		logger.Error("Failed to connect to MongoDB, continuing without MongoDB", zap.Error(err))
+		mongoClient = nil
+	}
+	if mongoClient != nil {
+		defer func() {
+			ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+			defer cancel()
+			if err := mongoClient.Disconnect(ctx); err != nil {
+				logger.Error("Failed to disconnect MongoDB", zap.Error(err))
+			}
+		}()
+		logger.Info("MongoDB connected")
+	}
+
 	startTime := time.Now()
+
+	mongoRepo := adapters.NewMongoDocumentRepository(
+		mongoClient,
+		cfg.MongoDBDatabase,
+		"documents",
+	)
+	if err := mongoRepo.Ping(context.Background()); err != nil {
+		logger.Warn("MongoDB ping failed", zap.Error(err))
+	} else {
+		logger.Info("MongoDB repository ready")
+	}
 
 	docRepository := adapters.NewDocumentRepository(db)
 
@@ -90,7 +117,7 @@ func main() {
 	defer consumerCancel()
 	go kafkaConsumer.Start(consumerCtx)
 
-	docService := services.NewDocumentService(docRepository, outboxService, cacheRepository)
+	docService := services.NewDocumentService(docRepository, outboxService, cacheRepository, mongoRepo)
 
 	protoDocumentServiceServer := adapters_grpc.NewProtoDocumentServiceServer(docService)
 

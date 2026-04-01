@@ -14,13 +14,15 @@ type DocumentService struct {
 	documentRepository ports.DocumentRepository
 	outboxService      ports.OutboxService
 	cacheRepository    ports.CacheRepository
+	mongoRepository    ports.MongoDocumentRepository // опционально, может быть nil
 }
 
-func NewDocumentService(documentRepository ports.DocumentRepository, outboxService ports.OutboxService, cacheRepository ports.CacheRepository) *DocumentService {
+func NewDocumentService(documentRepository ports.DocumentRepository, outboxService ports.OutboxService, cacheRepository ports.CacheRepository, mongoRepository ports.MongoDocumentRepository) *DocumentService {
 	return &DocumentService{
 		documentRepository: documentRepository,
 		outboxService:      outboxService,
 		cacheRepository:    cacheRepository,
+		mongoRepository:    mongoRepository,
 	}
 }
 
@@ -37,6 +39,18 @@ func (s *DocumentService) SendDocument(ctx context.Context, document *domain.Doc
 
 	if err := s.cacheRepository.Set(ctx, document.DocId, document, 5*time.Minute); err != nil {
 		fmt.Printf("Warning: failed to cache document %s: %v\n", document.DocId, err)
+	}
+
+	if s.mongoRepository != nil {
+		go func() {
+			mongoCtx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+			defer cancel()
+			if err := s.mongoRepository.Insert(mongoCtx, document); err != nil {
+				fmt.Printf("Warning: failed to save document %s to MongoDB: %v\n", document.DocId, err)
+			} else {
+				fmt.Printf("Document %s saved to MongoDB\n", document.DocId)
+			}
+		}()
 	}
 
 	savedDoc := &domain.Document{
