@@ -1,4 +1,4 @@
-.PHONY: all clean generate
+.PHONY: all clean generate test test-integration
 
 PROTO_FILE = api/proto/document.proto
 PROTO_PATHS = --proto_path=api/proto/ --proto_path=$(GOPATH)/pkg/mod/googleapis
@@ -20,3 +20,9 @@ generate: $(PROTO_FILE)
 
 clean:
 	rm -f $(OUTPUT_DIR)/*.pb.go $(OUTPUT_DIR)/*.swagger.json $(OUTPUT_DIR)/*.pb.gw.go $(OUTPUT_DIR)/*_validate.pb.go
+
+test:
+	go test ./... -v -count=1
+
+test-integration:
+	go test ./... -v -count=1 -tags=integration
