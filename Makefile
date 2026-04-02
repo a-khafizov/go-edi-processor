@@ -1,4 +1,4 @@
-.PHONY: all clean generate test test-integration
+.PHONY: all clean generate test test-integration build
 
 PROTO_FILE = api/proto/document.proto
 PROTO_PATHS = --proto_path=api/proto/ --proto_path=$(GOPATH)/pkg/mod/googleapis
@@ -26,3 +26,6 @@ test:
 
 test-integration:
 	go test ./... -v -count=1 -tags=integration
+
+build:
+	go build -o edi-processor ./cmd/main.go

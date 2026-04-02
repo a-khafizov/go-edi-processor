@@ -3,9 +3,7 @@
 #
 
 LOGGING.md
-.vscode
 vendor
-docs/tracing.md
 readme
 # Binaries for programs and plugins
 *.exe
