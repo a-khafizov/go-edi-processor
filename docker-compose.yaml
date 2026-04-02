@@ -1,0 +1,226 @@
+services:
+  # db/kafka
+  postgresql:
+    image: postgres:16-alpine
+    container_name: postgresql
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: edidb
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - infra-network
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    command: redis-server --appendonly no
+    ports:
+      - "6379:6379"
+    networks:
+      - infra-network
+    restart: unless-stopped
+
+  mongodb:
+    image: mongo:7
+    container_name: mongodb
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: root
+      MONGO_INITDB_ROOT_PASSWORD: root
+      MONGO_INITDB_DATABASE: edidb
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - infra-network
+    restart: unless-stopped
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:latest
+    container_name: clickhouse
+    environment:
+      CLICKHOUSE_DB: edidb
+      CLICKHOUSE_USER: root
+      CLICKHOUSE_PASSWORD: "root"
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+    volumes:
+      - clickhouse_data:/var/lib/clickhouse
+    networks:
+      - infra-network
+    restart: unless-stopped
+
+  kafka:
+    image: confluentinc/cp-kafka:7.6.0
+    container_name: kafka
+    environment:
+      CLUSTER_ID: jwuHZEcQSO2dA3m2tZhjIQ
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+      
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,EXTERNAL://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_LOG_RETENTION_HOURS: 168
+      
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
+    
+    ports:
+      - "9094:9094"
+    
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+    
+    networks:
+      - infra-network
+    
+    restart: unless-stopped
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui
+    depends_on:
+      - kafka
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    ports:
+      - "8081:8080"
+    networks:
+      - infra-network
+    restart: unless-stopped
+
+  # monitoring
+  # prometheus:
+  #   image: prom/prometheus:latest
+  #   container_name: prometheus
+  #   command:
+  #     - '--config.file=/etc/prometheus/prometheus.yml'
+  #     - '--storage.tsdb.path=/prometheus'
+  #     - '--web.console.libraries=/etc/prometheus/console_libraries'
+  #     - '--web.console.templates=/etc/prometheus/consoles'
+  #     - '--storage.tsdb.retention.time=200h'
+  #     - '--web.enable-lifecycle'
+  #   ports:
+  #     - "9090:9090"
+  #   volumes:
+  #     - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  #     - prometheus_data:/prometheus
+  #   networks:
+  #     - infra-network
+  #   restart: unless-stopped
+
+  # grafana:
+  #   image: grafana/grafana:latest
+  #   container_name: grafana
+  #   environment:
+  #     GF_SECURITY_ADMIN_USER: admin
+  #     GF_SECURITY_ADMIN_PASSWORD: admin
+  #     GF_INSTALL_PLUGINS: grafana-piechart-panel
+  #   ports:
+  #     - "3000:3000"
+  #   volumes:
+  #     - grafana_data:/var/lib/grafana
+  #     - ./grafana/provisioning:/etc/grafana/provisioning
+  #   networks:
+  #     - infra-network
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - prometheus
+  #     - loki
+
+  # loki:
+  #   image: grafana/loki:latest
+  #   container_name: loki
+  #   command: -config.file=/etc/loki/local-config.yaml
+  #   ports:
+  #     - "3100:3100"
+  #   volumes:
+  #     - loki_data:/loki
+  #   networks:
+  #     - infra-network
+  #   restart: unless-stopped
+
+  # alloy:
+  #   image: grafana/alloy:latest
+  #   container_name: alloy
+  #   command: run /etc/alloy/config.alloy
+  #   volumes:
+  #     - ./alloy/config.alloy:/etc/alloy/config.alloy:ro
+  #   ports:
+  #     - "12345:12345"
+  #   networks:
+  #     - infra-network
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - prometheus
+  #     - loki
+
+  # exporters
+  # kafka-exporter:
+  #   image: danielqsj/kafka-exporter:latest
+  #   container_name: kafka-exporter
+  #   environment:
+  #     KAFKA_BROKERS: kafka:9092
+  #     # KAFKA_SASL_ENABLED: "true"
+  #     # KAFKA_SASL_USERNAME: user1
+  #     # KAFKA_SASL_PASSWORD: password
+  #   ports:
+  #     - "9308:9308"
+  #   networks:
+  #     - infra-network
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - kafka
+
+  # postgres-exporter:
+  #   image: prometheuscommunity/postgres-exporter:latest
+  #   container_name: postgres-exporter
+  #   environment:
+  #     DATA_SOURCE_NAME: "postgresql://postgres:postgres@postgresql:5432/appdb?sslmode=disable"
+  #   ports:
+  #     - "9187:9187"
+  #   networks:
+  #     - infra-network
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - postgresql
+
+  # redis-exporter:
+  #   image: oliver006/redis_exporter:latest
+  #   container_name: redis-exporter
+  #   environment:
+  #     REDIS_ADDR: "redis://redis:6379"
+  #   ports:
+  #     - "9121:9121"
+  #   networks:
+  #     - infra-network
+  #   restart: unless-stopped
+  #   depends_on:
+  #     - redis
+
+volumes:
+  postgres_data:
+  mongo_data:
+  clickhouse_data:
+  kafka_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+
+networks:
+  infra-network:
+    driver: bridge
