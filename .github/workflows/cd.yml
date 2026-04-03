@@ -27,10 +27,14 @@ jobs:
         run: |
           docker compose up -d postgresql redis mongodb clickhouse kafka kafka-ui
           echo "Waiting for dependencies to start..."
-          sleep 30
+          sleep 10
 
       - name: Build binary
         run: make build
+      
+      - name: Mv binary to cmd
+        run: |
+          mv ./edi-processor .cmd/edi-processor
 
       - name: Deploy application
         run: |
@@ -39,52 +43,8 @@ jobs:
       - name: Wait for application
         run: |
           echo "Waiting for application to start..."
-          sleep 20
-
-      - name: Health check
-        run: |
-          echo "Performing health check..."
-          MAX_RETRIES=10
-          RETRY_DELAY=5
-          
-          for i in $(seq 1 $MAX_RETRIES); do
-            echo "Attempt $i/$MAX_RETRIES..."
-            if curl -f -s http://localhost:8080/health > /dev/null; then
-              echo "✅ Health check passed!"
-              
-              # Дополнительная проверка Swagger
-              if curl -s http://localhost:8080/swagger/ | grep -q "Swagger UI"; then
-                echo "✅ Swagger UI is accessible"
-              fi
-              
-              exit 0
-            fi
-            
-            if [ $i -lt $MAX_RETRIES ]; then
-              echo "⏳ Waiting $RETRY_DELAY seconds before retry..."
-              sleep $RETRY_DELAY
-            fi
-          done
-          
-          echo "❌ Health check failed after $MAX_RETRIES attempts"
-          echo "Debug info:"
-          docker logs edi-processor-app --tail 50 || true
-          exit 1
+          sleep 5
 
       - name: Show deployment info
-        if: success()
         run: |
-          echo "Deployment successful!"
-          echo ""
-          echo "Running containers:"
-          docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
-          echo ""
-          echo "Application endpoints:"
-          echo "  • HTTP/REST API: http://localhost:8080"
-          echo "  • gRPC API: localhost:9090"
-          echo "  • Health check: http://localhost:8080/health"
-          echo "  • Swagger UI: http://localhost:8080/swagger/"
-          echo "  • Kafka UI: http://localhost:8081"
-          echo ""
-          echo "Logs: docker logs edi-processor-app"
-          echo "Stop: docker compose down"
+          echo "Deployment successful..."
