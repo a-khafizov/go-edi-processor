@@ -34,7 +34,7 @@ jobs:
       
       - name: Mv binary to cmd
         run: |
-          mv ./edi-processor .cmd/edi-processor
+          mv ./edi-processor .cmd/
 
       - name: Deploy application
         run: |
