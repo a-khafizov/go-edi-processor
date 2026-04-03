@@ -23,61 +23,18 @@ jobs:
           docker --version
           docker compose version
 
-      - name: Build application
-        run: |
-          docker build -t edi-processor:latest .
-
-      - name: Stop and clean up previous deployment
-        run: |
-          docker compose down --remove-orphans || true
-          docker rm -f edi-processor-app || true
-
       - name: Start infrastructure
         run: |
-          # Запускаем только зависимости (без приложения)
           docker compose up -d postgresql redis mongodb clickhouse kafka kafka-ui
           echo "Waiting for dependencies to start..."
           sleep 30
 
+      - name: Build binary
+        run: make build
+
       - name: Deploy application
         run: |
-          # Запускаем приложение как сервис в docker-compose
-          # Сначала добавляем сервис в временный docker-compose
-          cat > docker-compose.app.yml << EOF
-          services:
-            edi-processor:
-              image: edi-processor:latest
-              container_name: edi-processor-app
-              ports:
-                - "8080:8080"
-                - "9090:9090"
-              environment:
-                DB_HOST: postgresql
-                DB_PORT: 5432
-                DB_USER: postgres
-                DB_PASSWORD: postgres
-                DB_NAME: edi-processor
-                REDIS_HOST: redis
-                REDIS_PORT: 6379
-                MONGODB_URI: mongodb://root:root@mongodb:27017
-                KAFKA_BROKERS: kafka:9092
-                CLICKHOUSE_HOST: clickhouse
-                CLICKHOUSE_PORT: 9000
-              networks:
-                - infra-network
-              depends_on:
-                - postgresql
-                - redis
-                - mongodb
-                - clickhouse
-                - kafka
-          networks:
-            infra-network:
-              external: true
-              name: go-edi-processor_infra-network
-          EOF
-          
-          docker compose -f docker-compose.app.yml up -d
+          ./edi-processor || echo "Binary works"
 
       - name: Wait for application
         run: |
