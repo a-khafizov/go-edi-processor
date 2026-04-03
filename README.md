@@ -1,4 +1,4 @@
-# Go EDI Processor
+# go edi processor
 
 Микросервис для обработки EDI-документов (XML, JSON).
 
