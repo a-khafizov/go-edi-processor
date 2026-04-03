@@ -1,0 +1,133 @@
+name: Deploy to Staging
+
+on:
+  workflow_run:
+    workflows: ["CI"]
+    types:
+      - completed
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker
+        run: |
+          docker --version
+          docker compose version
+
+      - name: Build application
+        run: |
+          docker build -t edi-processor:latest .
+
+      - name: Stop and clean up previous deployment
+        run: |
+          docker compose down --remove-orphans || true
+          docker rm -f edi-processor-app || true
+
+      - name: Start infrastructure
+        run: |
+          # Запускаем только зависимости (без приложения)
+          docker compose up -d postgresql redis mongodb clickhouse kafka kafka-ui
+          echo "Waiting for dependencies to start..."
+          sleep 30
+
+      - name: Deploy application
+        run: |
+          # Запускаем приложение как сервис в docker-compose
+          # Сначала добавляем сервис в временный docker-compose
+          cat > docker-compose.app.yml << EOF
+          services:
+            edi-processor:
+              image: edi-processor:latest
+              container_name: edi-processor-app
+              ports:
+                - "8080:8080"
+                - "9090:9090"
+              environment:
+                DB_HOST: postgresql
+                DB_PORT: 5432
+                DB_USER: postgres
+                DB_PASSWORD: postgres
+                DB_NAME: edi-processor
+                REDIS_HOST: redis
+                REDIS_PORT: 6379
+                MONGODB_URI: mongodb://root:root@mongodb:27017
+                KAFKA_BROKERS: kafka:9092
+                CLICKHOUSE_HOST: clickhouse
+                CLICKHOUSE_PORT: 9000
+              networks:
+                - infra-network
+              depends_on:
+                - postgresql
+                - redis
+                - mongodb
+                - clickhouse
+                - kafka
+          networks:
+            infra-network:
+              external: true
+              name: go-edi-processor_infra-network
+          EOF
+          
+          docker compose -f docker-compose.app.yml up -d
+
+      - name: Wait for application
+        run: |
+          echo "Waiting for application to start..."
+          sleep 20
+
+      - name: Health check
+        run: |
+          echo "Performing health check..."
+          MAX_RETRIES=10
+          RETRY_DELAY=5
+          
+          for i in $(seq 1 $MAX_RETRIES); do
+            echo "Attempt $i/$MAX_RETRIES..."
+            if curl -f -s http://localhost:8080/health > /dev/null; then
+              echo "✅ Health check passed!"
+              
+              # Дополнительная проверка Swagger
+              if curl -s http://localhost:8080/swagger/ | grep -q "Swagger UI"; then
+                echo "✅ Swagger UI is accessible"
+              fi
+              
+              exit 0
+            fi
+            
+            if [ $i -lt $MAX_RETRIES ]; then
+              echo "⏳ Waiting $RETRY_DELAY seconds before retry..."
+              sleep $RETRY_DELAY
+            fi
+          done
+          
+          echo "❌ Health check failed after $MAX_RETRIES attempts"
+          echo "Debug info:"
+          docker logs edi-processor-app --tail 50 || true
+          exit 1
+
+      - name: Show deployment info
+        if: success()
+        run: |
+          echo "Deployment successful!"
+          echo ""
+          echo "Running containers:"
+          docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+          echo ""
+          echo "Application endpoints:"
+          echo "  • HTTP/REST API: http://localhost:8080"
+          echo "  • gRPC API: localhost:9090"
+          echo "  • Health check: http://localhost:8080/health"
+          echo "  • Swagger UI: http://localhost:8080/swagger/"
+          echo "  • Kafka UI: http://localhost:8081"
+          echo ""
+          echo "Logs: docker logs edi-processor-app"
+          echo "Stop: docker compose down"
