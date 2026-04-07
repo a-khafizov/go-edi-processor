@@ -14,7 +14,7 @@ type DocumentService struct {
 	documentRepository ports.DocumentRepository
 	outboxService      ports.OutboxService
 	cacheRepository    ports.CacheRepository
-	mongoRepository    ports.MongoDocumentRepository // опционально, может быть nil
+	mongoRepository    ports.MongoDocumentRepository
 }
 
 func NewDocumentService(documentRepository ports.DocumentRepository, outboxService ports.OutboxService, cacheRepository ports.CacheRepository, mongoRepository ports.MongoDocumentRepository) *DocumentService {

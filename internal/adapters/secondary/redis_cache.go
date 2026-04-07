@@ -27,6 +27,7 @@ func (r *RedisCache) Set(ctx context.Context, key string, doc *domain.Document, 
 	if err := r.client.Set(ctx, key, data, ttl).Err(); err != nil {
 		return fmt.Errorf("failed to set key %s in Redis: %w", key, err)
 	}
+
 	return nil
 }
 
@@ -40,9 +41,11 @@ func (r *RedisCache) Get(ctx context.Context, key string) (*domain.Document, err
 	}
 
 	var doc domain.Document
+
 	if err := json.Unmarshal(data, &doc); err != nil {
 		return nil, fmt.Errorf("failed to unmarshal document: %w", err)
 	}
+
 	return &doc, nil
 }
 
@@ -50,6 +53,7 @@ func (r *RedisCache) Delete(ctx context.Context, key string) error {
 	if err := r.client.Del(ctx, key).Err(); err != nil {
 		return fmt.Errorf("failed to delete key %s from Redis: %w", key, err)
 	}
+
 	return nil
 }
 
@@ -58,6 +62,7 @@ func (r *RedisCache) Exists(ctx context.Context, key string) (bool, error) {
 	if err != nil {
 		return false, fmt.Errorf("failed to check existence of key %s: %w", key, err)
 	}
+
 	return exists > 0, nil
 }
 
@@ -65,5 +70,6 @@ func (r *RedisCache) Ping(ctx context.Context) error {
 	if err := r.client.Ping(ctx).Err(); err != nil {
 		return fmt.Errorf("Redis ping failed: %w", err)
 	}
+
 	return nil
 }

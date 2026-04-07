@@ -17,9 +17,10 @@ type MongoDocumentRepository struct {
 	collection *mongo.Collection
 }
 
-func NewMongoDocumentRepository(client *mongo.Client, dbName, collectionName string) *MongoDocumentRepository {
+func NewMongoDocumentRepository(client *mongo.Client, dbName string, collectionName string) *MongoDocumentRepository {
 	db := client.Database(dbName)
 	collection := db.Collection(collectionName)
+
 	return &MongoDocumentRepository{
 		client:     client,
 		database:   db,
@@ -67,18 +68,22 @@ func fromDomain(doc *domain.Document) *documentModel {
 func (r *MongoDocumentRepository) Insert(ctx context.Context, doc *domain.Document) error {
 	model := fromDomain(doc)
 	_, err := r.collection.InsertOne(ctx, model)
+
 	return err
 }
 
 func (r *MongoDocumentRepository) FindByID(ctx context.Context, id string) (*domain.Document, error) {
 	var model documentModel
+
 	err := r.collection.FindOne(ctx, bson.M{"doc_id": id}).Decode(&model)
 	if err != nil {
 		if errors.Is(err, mongo.ErrNoDocuments) {
 			return nil, nil
 		}
+
 		return nil, err
 	}
+
 	return model.toDomain(), nil
 }
 
@@ -95,6 +100,7 @@ func (r *MongoDocumentRepository) FindAll(ctx context.Context, limit, skip int64
 	defer cursor.Close(ctx)
 
 	var docs []*domain.Document
+
 	for cursor.Next(ctx) {
 		var model documentModel
 		if err := cursor.Decode(&model); err != nil {
@@ -102,22 +108,28 @@ func (r *MongoDocumentRepository) FindAll(ctx context.Context, limit, skip int64
 		}
 		docs = append(docs, model.toDomain())
 	}
+
 	if err := cursor.Err(); err != nil {
 		return nil, err
 	}
+
 	return docs, nil
 }
 
 func (r *MongoDocumentRepository) Update(ctx context.Context, doc *domain.Document) error {
 	model := fromDomain(doc)
+
 	filter := bson.M{"doc_id": doc.DocId}
 	update := bson.M{"$set": model}
+
 	_, err := r.collection.UpdateOne(ctx, filter, update)
+
 	return err
 }
 
 func (r *MongoDocumentRepository) Delete(ctx context.Context, id string) error {
 	_, err := r.collection.DeleteOne(ctx, bson.M{"doc_id": id})
+
 	return err
 }
 

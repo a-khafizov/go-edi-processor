@@ -89,20 +89,24 @@ func ensureTopic(client *kgo.Client, topic string) error {
 func (p *KafkaPublisher) Publish(ctx context.Context, msg *outbox.Message) error {
 	var payload map[string]interface{}
 	var key []byte
+
 	if err := json.Unmarshal(msg.Payload, &payload); err == nil {
 		if docID, ok := payload["doc_id"].(string); ok {
 			key = []byte(docID)
 		}
 	}
+
 	record := &kgo.Record{
 		Topic: p.topic,
 		Key:   key,
 		Value: msg.Payload,
 	}
+
 	err := p.client.ProduceSync(ctx, record).FirstErr()
 	if err != nil {
 		return fmt.Errorf("failed to publish message to Kafka: %w", err)
 	}
+
 	return nil
 }
 

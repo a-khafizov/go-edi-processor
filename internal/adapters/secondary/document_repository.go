@@ -30,6 +30,7 @@ func (r *DocumentRepository) SaveWithTx(ctx context.Context, tx outbox.TxQueryer
 			created_at = excluded.created_at,
 			updated_at = excluded.updated_at
 	`
+
 	_, err := tx.ExecContext(ctx, query,
 		doc.DocId,
 		string(doc.Type),
@@ -40,6 +41,7 @@ func (r *DocumentRepository) SaveWithTx(ctx context.Context, tx outbox.TxQueryer
 		doc.CreatedAt,
 		doc.UpdatedAt,
 	)
+
 	return err
 }
 
@@ -49,10 +51,13 @@ func (r *DocumentRepository) Get(ctx context.Context, id string) (*domain.Docume
 		from documents
 		where doc_id = $1
 	`
+
 	row := r.db.QueryRowContext(ctx, query, id)
+
 	var doc domain.Document
 	var docType, status string
 	var createdAt, updatedAt time.Time
+
 	err := row.Scan(&doc.DocId, &docType, &doc.Content, &doc.SenderID, &doc.ReceiverID, &status, &createdAt, &updatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -60,10 +65,12 @@ func (r *DocumentRepository) Get(ctx context.Context, id string) (*domain.Docume
 		}
 		return nil, err
 	}
+
 	doc.Type = domain.DocumentType(docType)
 	doc.Status = domain.DocumentStatus(status)
 	doc.CreatedAt = createdAt
 	doc.UpdatedAt = updatedAt
+
 	return &doc, nil
 }
 
@@ -75,10 +82,13 @@ func (r *DocumentRepository) GetOldest(ctx context.Context) (*domain.Document, e
 		order by created_at asc
 		limit 1
 	`
+
 	row := r.db.QueryRowContext(ctx, query, domain.Received)
+
 	var doc domain.Document
 	var docType, status string
 	var createdAt, updatedAt time.Time
+
 	err := row.Scan(&doc.DocId, &docType, &doc.Content, &doc.SenderID, &doc.ReceiverID, &status, &createdAt, &updatedAt)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -86,9 +96,11 @@ func (r *DocumentRepository) GetOldest(ctx context.Context) (*domain.Document, e
 		}
 		return nil, err
 	}
+
 	doc.Type = domain.DocumentType(docType)
 	doc.Status = domain.DocumentStatus(status)
 	doc.CreatedAt = createdAt
 	doc.UpdatedAt = updatedAt
+
 	return &doc, nil
 }

@@ -16,8 +16,7 @@ type outboxServiceImpl struct {
 	docRepo ports.DocumentRepository
 }
 
-func NewOutboxService(db *sql.DB, docRepo ports.DocumentRepository) (ports.OutboxService, error) {
-	dbCtx := outbox.NewDBContext(db, outbox.SQLDialectPostgres)
+func NewOutboxService(db *sql.DB, dbCtx *outbox.DBContext, docRepo ports.DocumentRepository) (ports.OutboxService, error) {
 	return &outboxServiceImpl{dbCtx: dbCtx, docRepo: docRepo}, nil
 }
 

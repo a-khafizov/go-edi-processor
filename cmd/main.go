@@ -30,7 +30,7 @@ func main() {
 	logger := deps.InitLogger(cfg.LogLevel)
 	defer logger.Sync()
 
-	serviceName := "go-edi-document-processor"
+	serviceName := "go-edi-processor"
 	if err := deps.InitTracerProvider(serviceName); err != nil {
 		logger.Error("Failed to initialize tracing",
 			zap.Error(err),
@@ -84,7 +84,9 @@ func main() {
 
 	cacheRepository := adapters.NewRedisCache(redisClient)
 
-	outboxService, err := adapters.NewOutboxService(db, docRepository)
+	dbCtx := outbox.NewDBContext(db, outbox.SQLDialectPostgres)
+
+	outboxService, err := adapters.NewOutboxService(db, dbCtx, docRepository)
 	if err != nil {
 		logger.Fatal("Failed to create outbox service", zap.Error(err))
 	}
@@ -94,8 +96,6 @@ func main() {
 		logger.Fatal("Failed to create Kafka publisher", zap.Error(err))
 	}
 	defer kafkaPublisher.Close()
-
-	dbCtx := outbox.NewDBContext(db, outbox.SQLDialectPostgres)
 
 	outboxReader := adapters.NewOutboxReader(dbCtx, kafkaPublisher, logger)
 	outboxReader.Start()
