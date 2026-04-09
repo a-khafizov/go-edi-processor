@@ -9,10 +9,10 @@ import (
 	"syscall"
 	"time"
 
-	adapters_grpc "github.com/go-edi-document-processor/internal/adapters/primary/grpc_controllers"
-	adapters_http "github.com/go-edi-document-processor/internal/adapters/primary/http_controllers"
+	"github.com/go-edi-document-processor/internal/adapters/input/grpc_controller"
+	gateway "github.com/go-edi-document-processor/internal/adapters/input/http_controller"
 
-	adapters "github.com/go-edi-document-processor/internal/adapters/secondary"
+	adapters "github.com/go-edi-document-processor/internal/adapters/output"
 	"github.com/go-edi-document-processor/internal/core/services"
 	"github.com/go-edi-document-processor/internal/deps"
 	"github.com/oagudo/outbox"
@@ -74,11 +74,6 @@ func main() {
 		cfg.MongoDBDatabase,
 		"documents",
 	)
-	if err := mongoRepo.Ping(context.Background()); err != nil {
-		logger.Warn("MongoDB ping failed", zap.Error(err))
-	} else {
-		logger.Info("MongoDB repository ready")
-	}
 
 	docRepository := adapters.NewDocumentRepository(db)
 
@@ -119,10 +114,10 @@ func main() {
 
 	docService := services.NewDocumentService(docRepository, outboxService, cacheRepository, mongoRepo)
 
-	protoDocumentServiceServer := adapters_grpc.NewProtoDocumentServiceServer(docService)
+	protoDocumentServiceServer := grpc_controller.NewProtoDocumentServiceServer(docService)
 
 	gatewayCtx := context.Background()
-	httpController, err := adapters_http.NewHttpControllers(gatewayCtx, "localhost:"+cfg.GRPCPort)
+	gateway, err := gateway.NewHttpControllers(gatewayCtx, "localhost:"+cfg.GRPCPort)
 	if err != nil {
 		logger.Error("Failed to create gateway handler",
 			zap.Error(err),
@@ -132,7 +127,7 @@ func main() {
 
 	httpServer := &http.Server{
 		Addr:    ":" + cfg.HTTPPort,
-		Handler: httpController,
+		Handler: gateway,
 	}
 
 	tracer := deps.GetTracer("grpc")

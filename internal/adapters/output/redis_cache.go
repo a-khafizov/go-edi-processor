@@ -56,20 +56,3 @@ func (r *RedisCache) Delete(ctx context.Context, key string) error {
 
 	return nil
 }
-
-func (r *RedisCache) Exists(ctx context.Context, key string) (bool, error) {
-	exists, err := r.client.Exists(ctx, key).Result()
-	if err != nil {
-		return false, fmt.Errorf("failed to check existence of key %s: %w", key, err)
-	}
-
-	return exists > 0, nil
-}
-
-func (r *RedisCache) Ping(ctx context.Context) error {
-	if err := r.client.Ping(ctx).Err(); err != nil {
-		return fmt.Errorf("Redis ping failed: %w", err)
-	}
-
-	return nil
-}

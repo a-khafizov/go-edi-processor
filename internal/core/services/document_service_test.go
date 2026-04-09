@@ -98,7 +98,7 @@ func TestDocumentService_SendDocument_Success(t *testing.T) {
 	assert.NoError(t, err)
 	assert.NotNil(t, result)
 	assert.NotEmpty(t, result.DocId)
-	assert.Equal(t, domain.Received, result.Status)
+	assert.Equal(t, domain.RECEIVED, result.Status)
 	mockOutbox.AssertExpectations(t)
 	mockCache.AssertExpectations(t)
 }
@@ -109,7 +109,7 @@ func TestDocumentService_GetDocumentByUUID_CacheHit(t *testing.T) {
 	cachedDoc := &domain.Document{
 		DocId:  docId,
 		Type:   domain.PDF,
-		Status: domain.Pending,
+		Status: domain.PENDING,
 	}
 
 	mockCache := &MockCacheRepository{}
@@ -128,7 +128,7 @@ func TestDocumentService_ReceiveDocument_Success(t *testing.T) {
 	oldDoc := &domain.Document{
 		DocId:     "doc1",
 		Type:      domain.XML,
-		Status:    domain.Pending,
+		Status:    domain.PENDING,
 		UpdatedAt: time.Now().Add(-1 * time.Hour),
 	}
 
@@ -151,7 +151,7 @@ func TestDocumentService_ReceiveDocument_Success(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.NotNil(t, doc)
-	assert.Equal(t, domain.Successful, doc.Status)
+	assert.Equal(t, domain.SUCCESSFUL, doc.Status)
 	assert.True(t, doc.UpdatedAt.After(oldDoc.UpdatedAt))
 	mockRepo.AssertExpectations(t)
 	mockOutbox.AssertExpectations(t)

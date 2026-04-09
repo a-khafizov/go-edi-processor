@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/go-edi-document-processor/internal/core/domain"
-	ports "github.com/go-edi-document-processor/internal/core/ports/secondary"
+	ports "github.com/go-edi-document-processor/internal/core/ports/output"
 	"github.com/oagudo/outbox"
 )
 

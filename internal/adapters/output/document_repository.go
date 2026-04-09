@@ -83,7 +83,7 @@ func (r *DocumentRepository) GetOldest(ctx context.Context) (*domain.Document, e
 		limit 1
 	`
 
-	row := r.db.QueryRowContext(ctx, query, domain.Received)
+	row := r.db.QueryRowContext(ctx, query, domain.RECEIVED)
 
 	var doc domain.Document
 	var docType, status string

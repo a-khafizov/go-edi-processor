@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"github.com/go-edi-document-processor/internal/core/domain"
-	ports "github.com/go-edi-document-processor/internal/core/ports/secondary"
+	ports "github.com/go-edi-document-processor/internal/core/ports/output"
 	"github.com/google/uuid"
 )
 
@@ -30,7 +30,7 @@ func (s *DocumentService) SendDocument(ctx context.Context, document *domain.Doc
 	document.DocId = uuid.New().String()
 	document.CreatedAt = time.Now()
 	document.UpdatedAt = time.Now()
-	document.Status = domain.Received
+	document.Status = domain.RECEIVED
 
 	err := s.outboxService.SaveDocumentWithEvent(ctx, document, "document.send")
 	if err != nil {
@@ -92,7 +92,7 @@ func (s *DocumentService) ReceiveDocument(ctx context.Context) (*domain.Document
 		return nil, nil
 	}
 
-	doc.Status = domain.Successful
+	doc.Status = domain.SUCCESSFUL
 	doc.UpdatedAt = time.Now()
 
 	err = s.outboxService.SaveDocumentWithEvent(ctx, doc, "document.status.updated")
