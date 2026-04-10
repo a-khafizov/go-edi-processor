@@ -1,37 +1,10 @@
 # go edi processor
 
-Микросервис для обработки EDI-документов (XML, JSON).
-
-## Структура проекта
-
-```
-├── api/proto/              # Protobuf определения
-├── cmd/main.go             # Точка входа
-├── internal/
-│   ├── core/               # Ядро приложения
-│   │   ├── domain/         # Доменные сущности
-│   │   ├── ports/          # Интерфейсы (порты)
-│   │   └── services/       # Бизнес-логика
-│   └── adapters/           # Адаптеры
-│       ├── input/        # Входные адаптеры (контроллеры)
-│       └── output/      # Выходные адаптеры (репозитории)
-├── db/migrations/          # Миграции базы данных
-└── docs/                   # Документация
-```
+Микросервис для обработки EDI-документов (XML, JSON)
 
 ## Стек
 
-- **Язык**: Go 1.25+
-- **gRPC**
-- **HTTP Gateway**
-- **Базы данных**: 
-  - MongoDB (документы)
-  - PostgreSQL (outbox, documents)
-  - Redis (кэш)
-- **Очереди**: Kafka (асинхронная обработка)
-- **Валидация**: protoc-gen-validate
-- **Логирование**: Zap
-- **Конфигурация**: Viper
+- Go 1.25+, gRPC, HTTP, MongoDB, PostgreSQL, Redis, Kafka, Zap, Viper
 
 ## API
 
