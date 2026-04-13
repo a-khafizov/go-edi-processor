@@ -54,32 +54,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Set up Docker
-        run: |
-          docker --version
-          docker compose version
-
       - name: Start infrastructure
         run: |
-          docker compose up -d postgresql redis mongodb clickhouse kafka kafka-ui
+          docker compose up -d
           echo "Waiting for dependencies to start..."
           sleep 10
-
-      - name: Build binary
-        run: make build
       
-      - name: Mv binary to cmd
+      - name: Start infrastructure
         run: |
-          mv ./edi-processor ./cmd/
-
-      - name: Deploy application
-        run: |
-          ./cmd/edi-processor || echo "Binary works"
-
-      - name: Wait for application
-        run: |
-          echo "Waiting for application to start..."
-          sleep 5
+          docker compose ps
+          sleep 10
 
       - name: Show deployment info
         run: |
