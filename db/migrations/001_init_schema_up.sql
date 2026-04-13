@@ -1,3 +1,5 @@
+CREATE DATABASE keycloak_db;
+
 CREATE TABLE documents (
     doc_id VARCHAR(255) PRIMARY KEY,
     type VARCHAR(50) NOT NULL,
