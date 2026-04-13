@@ -42,8 +42,8 @@ jobs:
 
       - name: Verify binary
         run: |
-          ls -la edi-processor
-          ./edi-processor --version 2>&1 || echo "Binary works"
+          ls -la go-doc-history
+          ./go-doc-history --version 2>&1 || echo "Binary works"
 
   deploy:
     name: Deploy
