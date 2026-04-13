@@ -28,4 +28,4 @@ test-integration:
 	go test ./... -v -count=1 -tags=integration
 
 build:
-	go build -o edi-processor ./cmd/main.go
+	go build -o go-doc-history ./cmd/main.go
