@@ -8,6 +8,11 @@ import (
 )
 
 type Config struct {
+	LogLevel string
+
+	HTTPPort string
+	GRPCPort string
+
 	DBHost     string
 	DBPort     string
 	DBName     string
@@ -31,22 +36,6 @@ type Config struct {
 	KafkaTLSClientCert    string
 	KafkaTLSClientKey     string
 	KafkaTLSInsecureSkip  bool
-
-	HTTPPort string
-	GRPCPort string
-	LogLevel string
-
-	PrometheusEnabled bool
-	LokiEnabled       bool
-	LokiURL           string
-
-	MongoDBEnabled      bool
-	MongoDBHost         string
-	MongoDBPort         string
-	MongoDBRootUser     string
-	MongoDBRootPassword string
-	MongoDBDatabase     string
-	MongoDBAuthSource   string
 }
 
 func Load() (*Config, error) {
@@ -64,6 +53,11 @@ func Load() (*Config, error) {
 	}
 
 	return &Config{
+		LogLevel: strings.ToLower(v.GetString("LOG_LEVEL")),
+
+		HTTPPort: v.GetString("HTTP_PORT"),
+		GRPCPort: v.GetString("GRPC_PORT"),
+
 		DBHost:     v.GetString("DB_HOST"),
 		DBPort:     v.GetString("DB_PORT"),
 		DBName:     v.GetString("DB_NAME"),
@@ -87,21 +81,5 @@ func Load() (*Config, error) {
 		KafkaTLSClientCert:    v.GetString("KAFKA_TLS_CLIENT_CERT"),
 		KafkaTLSClientKey:     v.GetString("KAFKA_TLS_CLIENT_KEY"),
 		KafkaTLSInsecureSkip:  v.GetBool("KAFKA_TLS_INSECURE_SKIP"),
-
-		HTTPPort: v.GetString("HTTP_PORT"),
-		GRPCPort: v.GetString("GRPC_PORT"),
-		LogLevel: strings.ToLower(v.GetString("LOG_LEVEL")),
-
-		PrometheusEnabled: v.GetBool("PROMETHEUS_ENABLED"),
-		LokiEnabled:       v.GetBool("LOKI_ENABLED"),
-		LokiURL:           v.GetString("LOKI_URL"),
-
-		MongoDBEnabled:      v.GetBool("MONGODB_ENABLED"),
-		MongoDBHost:         v.GetString("MONGODB_HOST"),
-		MongoDBPort:         v.GetString("MONGODB_PORT"),
-		MongoDBRootUser:     v.GetString("MONGODB_ROOT_USER"),
-		MongoDBRootPassword: v.GetString("MONGODB_ROOT_PASSWORD"),
-		MongoDBDatabase:     v.GetString("MONGODB_DATABASE"),
-		MongoDBAuthSource:   v.GetString("MONGODB_AUTH_SOURCE"),
 	}, nil
 }

@@ -92,7 +92,7 @@ func TestDocumentService_SendDocument_Success(t *testing.T) {
 	mockOutbox.On("SaveDocumentWithEvent", ctx, mock.AnythingOfType("*domain.Document"), "document.send").Return(nil)
 	mockCache.On("Set", ctx, mock.AnythingOfType("string"), mock.AnythingOfType("*domain.Document"), 5*time.Minute).Return(nil)
 
-	service := NewDocumentService(nil, mockOutbox, mockCache, nil)
+	service := NewDocumentService(nil, mockOutbox, mockCache)
 	result, err := service.SendDocument(ctx, doc)
 
 	assert.NoError(t, err)
@@ -115,7 +115,7 @@ func TestDocumentService_GetDocumentByUUID_CacheHit(t *testing.T) {
 	mockCache := &MockCacheRepository{}
 	mockCache.On("Get", ctx, docId).Return(cachedDoc, nil)
 
-	service := NewDocumentService(nil, nil, mockCache, nil)
+	service := NewDocumentService(nil, nil, mockCache)
 	doc, err := service.GetDocumentByUUID(ctx, docId)
 
 	assert.NoError(t, err)
@@ -146,7 +146,7 @@ func TestDocumentService_ReceiveDocument_Success(t *testing.T) {
 	mockOutbox.On("SaveDocumentWithEvent", ctx, mock.AnythingOfType("*domain.Document"), "document.status.updated").Return(nil)
 	mockCache.On("Delete", ctx, "doc1").Return(nil)
 
-	service := NewDocumentService(mockRepo, mockOutbox, mockCache, nil)
+	service := NewDocumentService(mockRepo, mockOutbox, mockCache)
 	doc, err := service.ReceiveDocument(ctx)
 
 	assert.NoError(t, err)

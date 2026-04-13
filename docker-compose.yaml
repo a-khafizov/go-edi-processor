@@ -1,21 +1,19 @@
 services:
-  # edi-processor:
-  #   build: .
-  #   network_mode: host
-  #   depends_on:
-  #     - postgresql
-  #     - redis
-  #     - mongodb
-  #     - clickhouse
-  #     - kafka
-  #   restart: unless-stopped
+  doc-history:
+    build: .
+    network_mode: host
+    depends_on:
+      - postgresql
+      - redis
+      - kafka
+    restart: unless-stopped
 
   postgresql:
     image: postgres:16-alpine
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: edi-processor
+      POSTGRES_DB: doc-history
     ports:
       - "5432:5432"
     volumes:
@@ -34,52 +32,27 @@ services:
       - infra-network
     restart: unless-stopped
 
-  mongodb:
-    image: mongo:7
-    environment:
-      MONGO_INITDB_ROOT_USERNAME: root
-      MONGO_INITDB_ROOT_PASSWORD: root
-      MONGO_INITDB_DATABASE: edi-processor
-    ports:
-      - "27017:27017"
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - infra-network
-    restart: unless-stopped
-
-  clickhouse:
-    image: clickhouse/clickhouse-server:latest
-    environment:
-      CLICKHOUSE_DB: edi-processor
-      CLICKHOUSE_USER: root
-      CLICKHOUSE_PASSWORD: "root"
-    ports:
-      - "8123:8123"
-      - "9000:9000"
-    volumes:
-      - clickhouse_data:/var/lib/clickhouse
-    networks:
-      - infra-network
-    restart: unless-stopped
-
   kafka:
     image: confluentinc/cp-kafka:7.6.0
     environment:
+      KAFKA_KRAFT_MODE: "true"
       CLUSTER_ID: jwuHZEcQSO2dA3m2tZhjIQ
       KAFKA_NODE_ID: 1
       KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
       KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka:9093"
       KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
       KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
-      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092
-      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:9093,HOST://0.0.0.0:9094
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092, HOST://localhost:9094
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT,HOST:PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
-      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 5000
+      KAFKA_LOG_DIRS: /var/lib/kafka/data
     ports:
       - "9092:9092"
+      - "9094:9094"
     volumes:
       - kafka_data:/var/lib/kafka/data
     networks:
@@ -99,12 +72,30 @@ services:
       - infra-network
     restart: unless-stopped
 
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.0.7
+    command: start-dev
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://postgresql:5432/keycloak_db
+      KC_DB_USERNAME: postgres
+      KC_DB_PASSWORD: postgres
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HOSTNAME: localhost
+      KC_HTTP_ENABLED: "true"
+    ports:
+      - "8080:8080"
+    depends_on:
+      - postgresql
+    networks:
+      - infra-network
+    restart: unless-stopped
+
 volumes:
   postgres_data:
-  mongo_data:
-  clickhouse_data:
   kafka_data:
   redis_data:
 
 networks:
-  infra-network:
+  doc-history-network:
